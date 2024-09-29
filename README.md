@@ -28,15 +28,13 @@
 	<a href="https://kengine.community">Get Help</a>
 </p>
 
-
-
 ### Menu
 
 - [Features](#features)
 - [Install](#install)
 - [Build from source](#build-from-source)
-	- [For development](#for-development)
-	- [With version information and/or plugins](#with-version-information-andor-plugins)
+  - [For development](#for-development)
+  - [With version information and/or plugins](#with-version-information-andor-plugins)
 - [Quick start](#quick-start)
 - [Overview](#overview)
 - [Full documentation](#full-documentation)
@@ -55,7 +53,6 @@
 	</a>
 </p>
 
-
 ## [Features](https://khulnasoft.com/features)
 
 - **Easy configuration** with the [Kenginefile](https://khulnasoft.com/docs/kenginefile)
@@ -63,10 +60,10 @@
 - **Dynamic configuration** with the [JSON API](https://khulnasoft.com/docs/api)
 - [**Config adapters**](https://khulnasoft.com/docs/config-adapters) if you don't like JSON
 - **Automatic HTTPS** by default
-	- [ZeroSSL](https://zerossl.com) and [Let's Encrypt](https://letsencrypt.org) for public names
-	- Fully-managed local CA for internal names & IPs
-	- Can coordinate with other Kengine instances in a cluster
-	- Multi-issuer fallback
+  - [ZeroSSL](https://zerossl.com) and [Let's Encrypt](https://letsencrypt.org) for public names
+  - Fully-managed local CA for internal names & IPs
+  - Can coordinate with other Kengine instances in a cluster
+  - Multi-issuer fallback
 - **Stays up when other servers go down** due to TLS/OCSP/certificate-related issues
 - **Production-ready** after serving trillions of requests and managing millions of TLS certificates
 - **Scales to hundreds of thousands of sites** as proven in production
@@ -133,9 +130,6 @@ $ xkengine build
 6. (Optional) Add plugins by adding their import: `_ "import/path/here"`
 7. Compile: `go build`
 
-
-
-
 ## Quick start
 
 The [Kengine website](https://khulnasoft.com/docs/) has documentation that includes tutorials, quick-start guides, reference, and more.
@@ -143,9 +137,6 @@ The [Kengine website](https://khulnasoft.com/docs/) has documentation that inclu
 **We recommend that all users -- regardless of experience level -- do our [Getting Started](https://khulnasoft.com/docs/getting-started) guide to become familiar with using Kengine.**
 
 If you've only got a minute, [the website has several quick-start tutorials](https://khulnasoft.com/docs/quick-starts) to choose from! However, after finishing a quick-start tutorial, please read more documentation to understand how the software works. 🙂
-
-
-
 
 ## Overview
 
@@ -163,16 +154,13 @@ To wield the power of this design, you need to know how the config document is s
 
 Nearly all of Kengine's configuration is contained in a single config document, rather than being scattered across CLI flags and env variables and a configuration file as with other web servers. This makes managing your server config more straightforward and reduces hidden variables/factors.
 
-
 ## Full documentation
 
 Our website has complete documentation:
 
 **https://khulnasoft.com/docs/**
 
-The docs are also open source. You can contribute to them here: https://github.com/khulnasoft/website
-
-
+The docs are also open source. You can contribute to them here: https://github.com/khulnasoft/kengine-website
 
 ## Getting help
 
@@ -183,8 +171,6 @@ The docs are also open source. You can contribute to them here: https://github.c
 - Individuals can exchange help for free on our community forum at https://kengine.community. Remember that people give help out of their spare time and good will. The best way to get help is to give it first!
 
 Please use our [issue tracker](https://github.com/khulnasoft/kengine/issues) only for bug reports and feature requests, i.e. actionable development items (support questions will usually be referred to the forums).
-
-
 
 ## About
 
