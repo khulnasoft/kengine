@@ -24,7 +24,7 @@ before:
     - /bin/sh -c 'cd ./kengine-build && go mod tidy'
     # vendor the deps of the prepared to-build module
     - /bin/sh -c 'cd ./kengine-build && go mod vendor'
-    - git clone --depth 1 https://github.com/khulnasoft/dist kengine-dist
+    - git clone --depth 1 https://github.com/khulnasoft/kengine-dist kengine-dist
     - mkdir -p kengine-dist/man
     - go mod download
     - go run cmd/kengine/main.go manpage --directory ./kengine-dist/man

@@ -372,5 +372,5 @@ func (rww *responseWriterWrapper) Write(d []byte) (int, error) {
 var (
 	_ kengine.Provisioner           = (*Handler)(nil)
 	_ kenginehttp.MiddlewareHandler = (*Handler)(nil)
-	_ http.ResponseWriter         = (*responseWriterWrapper)(nil)
+	_ http.ResponseWriter           = (*responseWriterWrapper)(nil)
 )

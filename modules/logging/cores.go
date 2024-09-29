@@ -30,7 +30,7 @@ func (lec *MockCore) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 
 // Interface guards
 var (
-	_ zapcore.Core          = (*MockCore)(nil)
+	_ zapcore.Core            = (*MockCore)(nil)
 	_ kengine.Module          = (*MockCore)(nil)
 	_ kenginefile.Unmarshaler = (*MockCore)(nil)
 )

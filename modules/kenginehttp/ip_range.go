@@ -21,8 +21,9 @@ import (
 	"strings"
 
 	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 	"github.com/khulnasoft/kengine/v2/internal"
+	"github.com/khulnasoft/kengine/v2/internal"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
 func init() {
@@ -126,7 +127,7 @@ func CIDRExpressionToPrefix(expr string) (netip.Prefix, error) {
 var (
 	_ kengine.Provisioner     = (*StaticIPRange)(nil)
 	_ kenginefile.Unmarshaler = (*StaticIPRange)(nil)
-	_ IPRangeSource         = (*StaticIPRange)(nil)
+	_ IPRangeSource           = (*StaticIPRange)(nil)
 )
 
 // PrivateRangesCIDR returns a list of private CIDR range

@@ -206,6 +206,6 @@ var (
 
 // Interface guards
 var (
-	_ OnDemandPermission = (*PermissionByHTTP)(nil)
-	_ kengine.Provisioner  = (*PermissionByHTTP)(nil)
+	_ OnDemandPermission  = (*PermissionByHTTP)(nil)
+	_ kengine.Provisioner = (*PermissionByHTTP)(nil)
 )

@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	webEngineName                = "Kengine"
-	defaultSpanName              = "handler"
+	webEngineName                  = "Kengine"
+	defaultSpanName                = "handler"
 	nextCallCtxKey  kengine.CtxKey = "nextCall"
 )
 

@@ -72,5 +72,5 @@ func (pl LeafPEMLoader) LoadLeafCertificates() ([]*x509.Certificate, error) {
 // Interface guard
 var (
 	_ LeafCertificateLoader = (*LeafPEMLoader)(nil)
-	_ kengine.Provisioner     = (*LeafPEMLoader)(nil)
+	_ kengine.Provisioner   = (*LeafPEMLoader)(nil)
 )

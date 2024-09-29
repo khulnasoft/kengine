@@ -110,6 +110,6 @@ func (e StaticError) ServeHTTP(w http.ResponseWriter, r *http.Request, _ Handler
 
 // Interface guard
 var (
-	_ MiddlewareHandler     = (*StaticError)(nil)
+	_ MiddlewareHandler       = (*StaticError)(nil)
 	_ kenginefile.Unmarshaler = (*StaticError)(nil)
 )

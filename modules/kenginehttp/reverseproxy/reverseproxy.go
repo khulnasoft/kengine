@@ -1343,7 +1343,7 @@ type LoadBalancing struct {
 	// host according to the load balancing policy.
 	RetryMatchRaw kenginehttp.RawMatcherSets `json:"retry_match,omitempty" kengine:"namespace=http.matchers"`
 
-	SelectionPolicy Selector              `json:"-"`
+	SelectionPolicy Selector                `json:"-"`
 	RetryMatch      kenginehttp.MatcherSets `json:"-"`
 }
 

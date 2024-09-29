@@ -95,5 +95,5 @@ func convertPEMFilesToDERBytes(filename string) ([]byte, error) {
 // Interface guard
 var (
 	_ LeafCertificateLoader = (*LeafFileLoader)(nil)
-	_ kengine.Provisioner     = (*LeafFileLoader)(nil)
+	_ kengine.Provisioner   = (*LeafFileLoader)(nil)
 )

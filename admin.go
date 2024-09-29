@@ -40,8 +40,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/khulnasoft-lab/certmagic"
 	"github.com/cespare/xxhash/v2"
+	"github.com/cespare/xxhash/v2"
+	"github.com/khulnasoft-lab/certmagic"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

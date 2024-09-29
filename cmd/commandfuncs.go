@@ -36,9 +36,9 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/internal"
 	"github.com/khulnasoft/kengine/v2/kengineconfig"
 	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	"github.com/khulnasoft/kengine/v2/internal"
 )
 
 func cmdStart(fl Flags) (int, error) {
@@ -801,6 +801,6 @@ func configFileWithRespectToDefault(logger *zap.Logger, configFile string) (stri
 
 type moduleInfo struct {
 	kengineModuleID string
-	goModule      *debug.Module
-	err           error
+	goModule        *debug.Module
+	err             error
 }

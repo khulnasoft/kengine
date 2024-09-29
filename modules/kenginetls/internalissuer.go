@@ -197,7 +197,7 @@ const defaultInternalCertLifetime = 12 * time.Hour
 
 // Interface guards
 var (
-	_ kengine.Provisioner               = (*InternalIssuer)(nil)
+	_ kengine.Provisioner             = (*InternalIssuer)(nil)
 	_ certmagic.Issuer                = (*InternalIssuer)(nil)
 	_ provisioner.CertificateModifier = (*customCertLifetime)(nil)
 )
