@@ -52,7 +52,7 @@ jobs:
           version: latest
 
           # Windows times out frequently after about 5m50s if we don't set a longer timeout.
-          args: fix --timeout 10m  # Added 'fix' command here
+          args: --timeout 10m fix  # Corrected placement of 'fix' command
 
           # Optional: show only new issues if it's a pull request. The default value is `false`.
           # only-new-issues: true
