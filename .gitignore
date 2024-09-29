@@ -1,31 +1,22 @@
-_gitignore/
-*.log
-Kenginefile
-Kenginefile.*
-!kenginefile/
-!kenginefile.go
-
-# artifacts from pprof tooling
-*.prof
-*.test
-
-# build artifacts and helpers
-cmd/kengine/kengine
-cmd/kengine/kengine.exe
-cmd/kengine/tmp/*.exe
-cmd/kengine/.env
-
-# mac specific
 .DS_Store
+Thumbs.db
+_gitignore/
+Vagrantfile
+.vagrant/
+/.idea
 
-# go modules
-vendor
+dist/builds/
+dist/release/
 
-# goreleaser artifacts
-dist
-kengine-build
-kengine-dist
+error.log
+access.log
 
-# IDE files
-.idea/
+/*.conf
+Kenginefile
+!kenginefile/
+
+og_static/
+
 .vscode/
+
+*.bat

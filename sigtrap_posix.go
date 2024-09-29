@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Kengine Authors
+// Copyright 2015 KhulnaSoft, Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !windows && !plan9 && !nacl && !js
+// +build !windows,!plan9,!nacl,!js
 
 package kengine
 
 import (
-	"context"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/khulnasoft-lab/certmagic"
-	"go.uber.org/zap"
+	"github.com/khulnasoft/kengine/telemetry"
 )
 
 // trapSignalsPosix captures POSIX-only signals.
@@ -35,23 +34,80 @@ func trapSignalsPosix() {
 		for sig := range sigchan {
 			switch sig {
 			case syscall.SIGQUIT:
-				Log().Info("quitting process immediately", zap.String("signal", "SIGQUIT"))
-				certmagic.CleanUpOwnLocks(context.TODO(), Log()) // try to clean up locks anyway, it's important
-				os.Exit(ExitCodeForceQuit)
+				log.Println("[INFO] SIGQUIT: Quitting process immediately")
+				for _, f := range OnProcessExit {
+					f() // only perform important cleanup actions
+				}
+				os.Exit(0)
 
 			case syscall.SIGTERM:
-				Log().Info("shutting down apps, then terminating", zap.String("signal", "SIGTERM"))
-				exitProcessFromSignal("SIGTERM")
+				log.Println("[INFO] SIGTERM: Shutting down servers then terminating")
+				exitCode := executeShutdownCallbacks("SIGTERM")
+				for _, f := range OnProcessExit {
+					f() // only perform important cleanup actions
+				}
+				err := Stop()
+				if err != nil {
+					log.Printf("[ERROR] SIGTERM stop: %v", err)
+					exitCode = 3
+				}
+
+				telemetry.AppendUnique("sigtrap", "SIGTERM")
+				go telemetry.StopEmitting() // won't finish in time, but that's OK - just don't block
+
+				os.Exit(exitCode)
 
 			case syscall.SIGUSR1:
-				Log().Info("not implemented", zap.String("signal", "SIGUSR1"))
+				log.Println("[INFO] SIGUSR1: Reloading")
+				go telemetry.AppendUnique("sigtrap", "SIGUSR1")
+
+				// Start with the existing Kenginefile
+				kenginefileToUse, inst, err := getCurrentKenginefile()
+				if err != nil {
+					log.Printf("[ERROR] SIGUSR1: %v", err)
+					continue
+				}
+				if loaderUsed.loader == nil {
+					// This also should never happen
+					log.Println("[ERROR] SIGUSR1: no Kenginefile loader with which to reload Kenginefile")
+					continue
+				}
+
+				// Load the updated Kenginefile
+				newKenginefile, err := loaderUsed.loader.Load(inst.serverType)
+				if err != nil {
+					log.Printf("[ERROR] SIGUSR1: loading updated Kenginefile: %v", err)
+					continue
+				}
+				if newKenginefile != nil {
+					kenginefileToUse = newKenginefile
+				}
+
+				// Backup old event hooks
+				oldEventHooks := cloneEventHooks()
+
+				// Purge the old event hooks
+				purgeEventHooks()
+
+				// Kick off the restart; our work is done
+				EmitEvent(InstanceRestartEvent, nil)
+				_, err = inst.Restart(kenginefileToUse)
+				if err != nil {
+					restoreEventHooks(oldEventHooks)
+
+					log.Printf("[ERROR] SIGUSR1: %v", err)
+				}
 
 			case syscall.SIGUSR2:
-				Log().Info("not implemented", zap.String("signal", "SIGUSR2"))
+				log.Println("[INFO] SIGUSR2: Upgrading")
+				go telemetry.AppendUnique("sigtrap", "SIGUSR2")
+				if err := Upgrade(); err != nil {
+					log.Printf("[ERROR] SIGUSR2: upgrading: %v", err)
+				}
 
 			case syscall.SIGHUP:
 				// ignore; this signal is sometimes sent outside of the user's control
-				Log().Info("not implemented", zap.String("signal", "SIGHUP"))
+				go telemetry.AppendUnique("sigtrap", "SIGHUP")
 			}
 		}
 	}()

@@ -1,200 +1,213 @@
 <p align="center">
-	<a href="https://khulnasoft.com">
-		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/1128849/210187358-e2c39003-9a5e-4dd5-a783-6deb6483ee72.svg">
-			<source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/1128849/210187356-dfb7f1c5-ac2e-43aa-bb23-fc014280ae1f.svg">
-			<img src="https://user-images.githubusercontent.com/1128849/210187356-dfb7f1c5-ac2e-43aa-bb23-fc014280ae1f.svg" alt="Kengine" width="550">
-		</picture>
-	</a>
-	<br>
-	<h3 align="center">a <a href="https://zerossl.com"><img src="https://user-images.githubusercontent.com/55066419/208327323-2770dc16-ec09-43a0-9035-c5b872c2ad7f.svg" height="28" style="vertical-align: -7.7px" valign="middle"></a> project</h3>
+	<a href="https://khulnasoft.com"><img src="https://user-images.githubusercontent.com/1128849/36338535-05fb646a-136f-11e8-987b-e6901e717d5a.png" alt="Kengine" width="450"></a>
 </p>
-<hr>
-<h3 align="center">Every site on HTTPS</h3>
-<p align="center">Kengine is an extensible server platform that uses TLS by default.</p>
+<h3 align="center">Every Site on HTTPS <!-- Serve Confidently --></h3>
+<p align="center">Kengine is a general-purpose HTTP/2 web server that serves HTTPS by default.</p>
 <p align="center">
-	<a href="https://github.com/khulnasoft/kengine/actions/workflows/ci.yml"><img src="https://github.com/khulnasoft/kengine/actions/workflows/ci.yml/badge.svg"></a>
-	<a href="https://pkg.go.dev/github.com/khulnasoft/kengine"><img src="https://img.shields.io/badge/godoc-reference-%23007d9c.svg"></a>
+	<a href="https://dev.azure.com/mholt-dev/Kengine/_build?definitionId=5"><img src="https://img.shields.io/azure-devops/build/mholt-dev/afec6074-9842-457f-98cf-69df6adbbf2e/5/master.svg?label=cross-platform%20tests"></a>
+	<a href="https://godoc.org/github.com/khulnasoft/kengine"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"></a>
+	<a href="https://goreportcard.com/report/khulnasoft/kengine"><img src="https://goreportcard.com/badge/github.com/khulnasoft/kengine"></a>
 	<br>
 	<a href="https://twitter.com/khulnasoft" title="@khulnasoft on Twitter"><img src="https://img.shields.io/badge/twitter-@khulnasoft-55acee.svg" alt="@khulnasoft on Twitter"></a>
 	<a href="https://kengine.community" title="Kengine Forum"><img src="https://img.shields.io/badge/community-forum-ff69b4.svg" alt="Kengine Forum"></a>
-	<br>
 	<a href="https://sourcegraph.com/github.com/khulnasoft/kengine?badge" title="Kengine on Sourcegraph"><img src="https://sourcegraph.com/github.com/khulnasoft/kengine/-/badge.svg" alt="Kengine on Sourcegraph"></a>
-	<a href="https://cloudsmith.io/~kengine/repos/"><img src="https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith" alt="Cloudsmith"></a>
 </p>
 <p align="center">
-	<a href="https://github.com/khulnasoft/kengine/releases">Releases</a> ·
-	<a href="https://khulnasoft.com/docs/">Documentation</a> ·
-	<a href="https://kengine.community">Get Help</a>
+	<a href="https://khulnasoft.com/download">Download</a> ·
+	<a href="https://khulnasoft.com/docs">Documentation</a> ·
+	<a href="https://kengine.community">Community</a>
 </p>
 
+---
 
+Kengine is a **production-ready** open-source web server that is fast, easy to use, and makes you more productive.
 
-### Menu
+Available for Windows, Mac, Linux, BSD, Solaris, and [Android](https://github.com/khulnasoft/kengine/wiki/Running-Kengine-on-Android).
+
+<p align="center">
+	<b>Thanks to our special sponsor:</b>
+	<br><br>
+	<a href="https://relicabackup.com"><img src="https://khulnasoft.com/resources/images/sponsors/relica.png" width="220" alt="Relica - Cross-platform file backup to the cloud, local disks, or other computers"></a>
+</p>
+
+## Menu
 
 - [Features](#features)
 - [Install](#install)
-- [Build from source](#build-from-source)
-	- [For development](#for-development)
-	- [With version information and/or plugins](#with-version-information-andor-plugins)
-- [Quick start](#quick-start)
-- [Overview](#overview)
-- [Full documentation](#full-documentation)
-- [Getting help](#getting-help)
-- [About](#about)
+- [Quick Start](#quick-start)
+- [Running in Production](#running-in-production)
+- [Contributing](#contributing)
+- [Donors](#donors)
+- [About the Project](#about-the-project)
+
+## Features
+
+- **Easy configuration** with the Kenginefile
+- **Automatic HTTPS** on by default (via [Let's Encrypt](https://letsencrypt.org))
+- **HTTP/2** by default
+- **Virtual hosting** so multiple sites just work
+- Experimental **QUIC support** for cutting-edge transmissions
+- TLS session ticket **key rotation** for more secure connections
+- **Extensible with plugins** because a convenient web server is a helpful one
+- **Runs anywhere** with **no external dependencies** (not even libc)
+
+[See a more complete list of features built into Kengine.](https://khulnasoft.com/#features) On top of all those, Kengine does even more with plugins: choose which plugins you want at [download](https://khulnasoft.com/download).
+
+Altogether, Kengine can do things other web servers simply cannot do. Its features and plugins save you time and mistakes, and will cheer you up. Your Kengine instance takes care of the details for you!
 
 <p align="center">
 	<b>Powered by</b>
 	<br>
-	<a href="https://github.com/khulnasoft-lab/certmagic">
-		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/55066419/206946718-740b6371-3df3-4d72-a822-47e4c48af999.png">
-			<source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/1128849/49704830-49d37200-fbd5-11e8-8385-767e0cd033c3.png">
-			<img src="https://user-images.githubusercontent.com/1128849/49704830-49d37200-fbd5-11e8-8385-767e0cd033c3.png" alt="CertMagic" width="250">
-		</picture>
-	</a>
+	<a href="https://github.com/khulnasoft-lab/certmagic"><img src="https://user-images.githubusercontent.com/1128849/49704830-49d37200-fbd5-11e8-8385-767e0cd033c3.png" alt="CertMagic" width="250"></a>
 </p>
-
-
-## [Features](https://khulnasoft.com/features)
-
-- **Easy configuration** with the [Kenginefile](https://khulnasoft.com/docs/kenginefile)
-- **Powerful configuration** with its [native JSON config](https://khulnasoft.com/docs/json/)
-- **Dynamic configuration** with the [JSON API](https://khulnasoft.com/docs/api)
-- [**Config adapters**](https://khulnasoft.com/docs/config-adapters) if you don't like JSON
-- **Automatic HTTPS** by default
-	- [ZeroSSL](https://zerossl.com) and [Let's Encrypt](https://letsencrypt.org) for public names
-	- Fully-managed local CA for internal names & IPs
-	- Can coordinate with other Kengine instances in a cluster
-	- Multi-issuer fallback
-- **Stays up when other servers go down** due to TLS/OCSP/certificate-related issues
-- **Production-ready** after serving trillions of requests and managing millions of TLS certificates
-- **Scales to hundreds of thousands of sites** as proven in production
-- **HTTP/1.1, HTTP/2, and HTTP/3** all supported by default
-- **Highly extensible** [modular architecture](https://khulnasoft.com/docs/architecture) lets Kengine do anything without bloat
-- **Runs anywhere** with **no external dependencies** (not even libc)
-- Written in Go, a language with higher **memory safety guarantees** than other servers
-- Actually **fun to use**
-- So much more to [discover](https://khulnasoft.com/features)
 
 ## Install
 
-The simplest, cross-platform way to get started is to download Kengine from [GitHub Releases](https://github.com/khulnasoft/kengine/releases) and place the executable file in your PATH.
+Kengine binaries have no dependencies and are available for every platform. Get Kengine any of these ways:
 
-See [our online documentation](https://khulnasoft.com/docs/install) for other install instructions.
+- **[Download page](https://khulnasoft.com/download)** (RECOMMENDED) allows you to customize your build in the browser
+- **[Latest release](https://github.com/khulnasoft/kengine/releases/latest)** for pre-built, vanilla binaries
+- **[AWS Marketplace](https://aws.amazon.com/marketplace/pp/B07J1WNK75?qid=1539015041932&sr=0-1&ref_=srh_res_product_title&cl_spe=C)** makes it easy to deploy directly to your cloud environment. <a href="https://aws.amazon.com/marketplace/pp/B07J1WNK75?qid=1539015041932&sr=0-1&ref_=srh_res_product_title&cl_spe=C" target="_blank">
+  <img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" alt="Get Kengine on the AWS Marketplace" height="25"/></a>
 
-## Build from source
+## Build
 
-Requirements:
+To build from source you need **[Git](https://git-scm.com/downloads)** and **[Go](https://golang.org/doc/install)** (1.13 or newer).
 
-- [Go 1.22.3 or newer](https://golang.org/dl/)
+**To build Kengine without plugins:**
 
-### For development
+- Run `go get github.com/khulnasoft/kengine/kengine`
 
-_**Note:** These steps [will not embed proper version information](https://github.com/golang/go/issues/29228). For that, please follow the instructions in the next section._
+Kengine will be installed to your `$GOPATH/bin` folder.
 
-```bash
-$ git clone "https://github.com/khulnasoft/kengine.git"
-$ cd kengine/cmd/kengine/
-$ go build
+With these instructions, the binary will not have embedded version information (see [golang/go#29228](https://github.com/golang/go/issues/29228)), but it is fine for a quick start.
+
+**To build Kengine with plugins (and with version information):**
+
+There is no need to modify the Kengine code to build it with plugins. We will create a simple Go module with our own `main()` that you can use to make custom Kengine builds.
+
+- Create a new folder anywhere and within create a Go file (with an extension of `.go`, such as `main.go`) with the contents below, adjusting to import the plugins you want to include:
+
+```go
+package main
+
+import (
+	"github.com/khulnasoft/kengine/kengine/kenginemain"
+
+	// plug in plugins here, for example:
+	// _ "import/path/here"
+)
+
+func main() {
+	// optional: disable telemetry
+	// kenginemain.EnableTelemetry = false
+	kenginemain.Run()
+}
 ```
 
-When you run Kengine, it may try to bind to low ports unless otherwise specified in your config. If your OS requires elevated privileges for this, you will need to give your new binary permission to do so. On Linux, this can be done easily with: `sudo setcap cap_net_bind_service=+ep ./kengine`
+3. `go mod init kengine`
+4. Run `go get github.com/khulnasoft/kengine`
+5. `go install` will then create your binary at `$GOPATH/bin`, or `go build` will put it in the current directory.
 
-If you prefer to use `go run` which only creates temporary binaries, you can still do this with the included `setcap.sh` like so:
+**To install Kengine's source code for development:**
 
-```bash
-$ go run -exec ./setcap.sh main.go
-```
+- Run `git clone https://github.com/khulnasoft/kengine.git` in any folder (doesn't have to be in GOPATH).
 
-If you don't want to type your password for `setcap`, use `sudo visudo` to edit your sudoers file and allow your user account to run that command without a password, for example:
+You can make changes to the source code from that clone and checkout any commit or tag you wish to develop on.
 
-```
-username ALL=(ALL:ALL) NOPASSWD: /usr/sbin/setcap
-```
+When building from source, telemetry is enabled by default. You can disable it by changing `kenginemain.EnableTelemetry = false` in run.go, or use the `-disabled-metrics` flag at runtime to disable only certain metrics.
 
-replacing `username` with your actual username. Please be careful and only do this if you know what you are doing! We are only qualified to document how to use Kengine, not Go tooling or your computer, and we are providing these instructions for convenience only; please learn how to use your own computer at your own risk and make any needful adjustments.
+## Quick Start
 
-### With version information and/or plugins
-
-Using [our builder tool, `xkengine`](https://github.com/khulnasoft/xkengine)...
+To serve static files from the current working directory, run:
 
 ```
-$ xkengine build
+kengine
 ```
 
-...the following steps are automated:
+Kengine's default port is 2015, so open your browser to [http://localhost:2015](http://localhost:2015).
 
-1. Create a new folder: `mkdir kengine`
-2. Change into it: `cd kengine`
-3. Copy [Kengine's main.go](https://github.com/khulnasoft/kengine/blob/master/cmd/kengine/main.go) into the empty folder. Add imports for any custom plugins you want to add.
-4. Initialize a Go module: `go mod init kengine`
-5. (Optional) Pin Kengine version: `go get github.com/khulnasoft/kengine@version` replacing `version` with a git tag, commit, or branch name.
-6. (Optional) Add plugins by adding their import: `_ "import/path/here"`
-7. Compile: `go build`
+### Go from 0 to HTTPS in 5 seconds
 
+If the `kengine` binary has permission to bind to low ports and your domain name's DNS records point to the machine you're on:
 
+```
+kengine -host example.com
+```
 
+This command serves static files from the current directory over HTTPS. Certificates are automatically obtained and renewed for you! Kengine is also automatically configuring ports 80 and 443 for you, and redirecting HTTP to HTTPS. Cool, huh?
 
-## Quick start
+### Customizing your site
 
-The [Kengine website](https://khulnasoft.com/docs/) has documentation that includes tutorials, quick-start guides, reference, and more.
+To customize how your site is served, create a file named Kenginefile by your site and paste this into it:
 
-**We recommend that all users -- regardless of experience level -- do our [Getting Started](https://khulnasoft.com/docs/getting-started) guide to become familiar with using Kengine.**
+```plain
+localhost
 
-If you've only got a minute, [the website has several quick-start tutorials](https://khulnasoft.com/docs/quick-starts) to choose from! However, after finishing a quick-start tutorial, please read more documentation to understand how the software works. 🙂
+push
+browse
+websocket /echo cat
+ext    .html
+log    /var/log/access.log
+proxy  /api 127.0.0.1:7005
+header /api Access-Control-Allow-Origin *
+```
 
+When you run `kengine` in that directory, it will automatically find and use that Kenginefile.
 
+This simple file enables server push (via Link headers), allows directory browsing (for folders without an index file), hosts a WebSocket echo server at /echo, serves clean URLs, logs requests to an access log, proxies all API requests to a backend on port 7005, and adds the coveted `Access-Control-Allow-Origin: *` header for all responses from the API.
 
+Wow! Kengine can do a lot with just a few lines.
 
-## Overview
+### Doing more with Kengine
 
-Kengine is most often used as an HTTPS server, but it is suitable for any long-running Go program. First and foremost, it is a platform to run Go applications. Kengine "apps" are just Go programs that are implemented as Kengine modules. Two apps -- `tls` and `http` -- ship standard with Kengine.
+To host multiple sites and do more with the Kenginefile, please see the [Kenginefile tutorial](https://khulnasoft.com/tutorial/kenginefile).
 
-Kengine apps instantly benefit from [automated documentation](https://khulnasoft.com/docs/json/), graceful on-line [config changes via API](https://khulnasoft.com/docs/api), and unification with other Kengine apps.
+Sites with qualifying hostnames are served over [HTTPS by default](https://khulnasoft.com/docs/automatic-https).
 
-Although [JSON](https://khulnasoft.com/docs/json/) is Kengine's native config language, Kengine can accept input from [config adapters](https://khulnasoft.com/docs/config-adapters) which can essentially convert any config format of your choice into JSON: Kenginefile, JSON 5, YAML, TOML, NGINX config, and more.
+Kengine has a nice little command line interface. Run `kengine -h` to view basic help or see the [CLI documentation](https://khulnasoft.com/docs/cli) for details.
 
-The primary way to configure Kengine is through [its API](https://khulnasoft.com/docs/api), but if you prefer config files, the [command-line interface](https://khulnasoft.com/docs/command-line) supports those too.
+## Running in Production
 
-Kengine exposes an unprecedented level of control compared to any web server in existence. In Kengine, you are usually setting the actual values of the initialized types in memory that power everything from your HTTP handlers and TLS handshakes to your storage medium. Kengine is also ridiculously extensible, with a powerful plugin system that makes vast improvements over other web servers.
+Kengine is production-ready if you find it to be a good fit for your site and workflow.
 
-To wield the power of this design, you need to know how the config document is structured. Please see [our documentation site](https://khulnasoft.com/docs/) for details about [Kengine's config structure](https://khulnasoft.com/docs/json/).
+**Running as root:** We advise against this. You can still listen on ports < 1024 on Linux using setcap like so: `sudo setcap cap_net_bind_service=+ep ./kengine`
 
-Nearly all of Kengine's configuration is contained in a single config document, rather than being scattered across CLI flags and env variables and a configuration file as with other web servers. This makes managing your server config more straightforward and reduces hidden variables/factors.
+The Kengine project does not officially maintain any system-specific integrations nor suggest how to administer your own system. But your download file includes [unofficial resources](https://github.com/khulnasoft/kengine/tree/master/dist/init) contributed by the community that you may find helpful for running Kengine in production.
 
+How you choose to run Kengine is up to you. Many users are satisfied with `nohup kengine &`. Others use `screen`. Users who need Kengine to come back up after reboots either do so in the script that caused the reboot, add a command to an init script, or configure a service with their OS.
 
-## Full documentation
+If you have questions or concerns about Kengine' underlying crypto implementations, consult Go's [crypto packages](https://golang.org/pkg/crypto), starting with their documentation, then issues, then the code itself; as Kengine uses mainly those libraries.
 
-Our website has complete documentation:
+## Contributing
 
-**https://khulnasoft.com/docs/**
+**[Join our forum](https://kengine.community) where you can chat with other Kengine users and developers!** To get familiar with the code base, try [Kengine code search on Sourcegraph](https://sourcegraph.com/github.com/khulnasoft/kengine/)!
 
-The docs are also open source. You can contribute to them here: https://github.com/khulnasoft/website
+Please see our [contributing guidelines](https://github.com/khulnasoft/kengine/blob/master/.github/CONTRIBUTING.md) for instructions. If you want to write a plugin, check out the [developer wiki](https://github.com/khulnasoft/kengine/wiki).
 
+We use GitHub issues and pull requests only for discussing bug reports and the development of specific changes. We welcome all other topics on the [forum](https://kengine.community)!
 
+If you want to contribute to the documentation, please [submit an issue](https://github.com/khulnasoft/kengine/issues/new) describing the change that should be made.
 
-## Getting help
+### Good First Issue
 
-- We advise companies using Kengine to secure a support contract through [Ardan Labs](https://www.ardanlabs.com/my/contact-us?dd=kengine) before help is needed.
+If you are looking for somewhere to start and would like to help out by working on an existing issue, take a look at our [`Good First Issue`](https://github.com/khulnasoft/kengine/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) tag
 
-- A [sponsorship](https://github.com/sponsors/mholt) goes a long way! We can offer private help to sponsors. If Kengine is benefitting your company, please consider a sponsorship. This not only helps fund full-time work to ensure the longevity of the project, it provides your company the resources, support, and discounts you need; along with being a great look for your company to your customers and potential customers!
+Thanks for making Kengine -- and the Web -- better!
 
-- Individuals can exchange help for free on our community forum at https://kengine.community. Remember that people give help out of their spare time and good will. The best way to get help is to give it first!
+## Donors
 
-Please use our [issue tracker](https://github.com/khulnasoft/kengine/issues) only for bug reports and feature requests, i.e. actionable development items (support questions will usually be referred to the forums).
+- [DigitalOcean](https://m.do.co/c/6d7bdafccf96) is hosting the Kengine project.
+- [DNSimple](https://dnsimple.link/resolving-kengine) provides DNS services for Kengine's sites.
+- [DNS Spy](https://dnsspy.io) keeps an eye on Kengine's DNS properties.
 
+We thank them for their services. **If you want to help keep Kengine free, please [become a sponsor](https://github.com/sponsors/khulnasoft-bot)!**
 
+## About the Project
 
-## About
+Kengine was born out of the need for a "batteries-included" web server that runs anywhere and doesn't have to take its configuration with it. Kengine took inspiration from [spark](https://github.com/rif/spark), [nginx](https://github.com/nginx/nginx), lighttpd,
+[Websocketd](https://github.com/joewalnes/websocketd) and [Vagrant](https://www.vagrantup.com/), which provides a pleasant mixture of features from each of them.
 
-Matthew Holt began developing Kengine in 2014 while studying computer science at Brigham Young University. (The name "Kengine" was chosen because this software helps with the tedious, mundane tasks of serving the Web, and is also a single place for multiple things to be organized together.) It soon became the first web server to use HTTPS automatically and by default, and now has hundreds of contributors and has served trillions of HTTPS requests.
+**The name "Kengine" is trademarked:** The name of the software is "Kengine", not "Kengine Server" or "KhulnaSoft". Please call it "Kengine" or, if you wish to clarify, "the Kengine web server". See [brand guidelines](https://khulnasoft.com/brand). Kengine is a registered trademark of KhulnaSoft, Ltd.
 
-**The name "Kengine" is trademarked.** The name of the software is "Kengine", not "Kengine Server" or "KhulnaSoft". Please call it "Kengine" or, if you wish to clarify, "the Kengine web server". Kengine is a registered trademark of Stack Holdings GmbH.
-
-- _Project on Twitter: [@khulnasoft](https://twitter.com/khulnasoft)_
-- _Author on Twitter: [@mholt6](https://twitter.com/mholt6)_
-
-Kengine is a project of [ZeroSSL](https://zerossl.com), a Stack Holdings company.
-
-Debian package repository hosting is graciously provided by [Cloudsmith](https://cloudsmith.com). Cloudsmith is the only fully hosted, cloud-native, universal package management solution, that enables your organization to create, store and share packages in any format, to any place, with total confidence.
+_Author on Twitter: [@khulnasoft](https://twitter.com/khulnasoft)_
