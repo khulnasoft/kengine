@@ -31,7 +31,8 @@ import (
 	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
 	"github.com/khulnasoft/kengine/v2/modules/kenginehttp/headers"
 	"github.com/khulnasoft/kengine/v2/modules/kenginehttp/rewrite"
-	"github.com/khulnasoft/kengine/v2/modules/kenginetls"
+	// Remove if not used
+	// "github.com/khulnasoft/kengine/v2/modules/kenginetls"
 )
 
 func init() {
