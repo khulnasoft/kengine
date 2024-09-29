@@ -23,12 +23,6 @@ Kengine is a **production-ready** open-source web server that is fast, easy to u
 
 Available for Windows, Mac, Linux, BSD, Solaris, and [Android](https://github.com/khulnasoft/kengine/wiki/Running-Kengine-on-Android).
 
-<p>
-	<b>Thanks to our special sponsor:</b>
-	<br><br>
-	<a href="https://relicabackup.com"><img src="https://khulnasoft.com/resources/images/sponsors/relica.png" width="220" alt="Relica - Cross-platform file backup to the cloud, local disks, or other computers"></a>
-</p>
-
 ## Menu
 
 - [Features](#features)
