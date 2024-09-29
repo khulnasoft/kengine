@@ -27,16 +27,16 @@ jobs:
           go install mvdan.cc/gofumpt@latest
           go install github.com/daixiang0/gci@latest
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-      
+
+      - name: Makefile fix
+        run: |
+          make fix
+          make fix
+          make fix
+
       - name: Run lint
         run: make lint
-
-      - name: Fix gci
-        run: make fix-gci
-
-      - name: Fix gofumpt
-        run: make fix-gofumpt
-
+        
       - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
