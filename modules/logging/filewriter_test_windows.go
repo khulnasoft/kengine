@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import (
 // This is pretty restrictive and has few interest for log files and thus we just test that log files are
 // opened with R/W permissions by default on Windows too.
 func TestFileCreationMode(t *testing.T) {
-	dir, err := os.MkdirTemp("", "caddytest")
+	dir, err := os.MkdirTemp("", "kenginetest")
 	if err != nil {
 		t.Fatalf("failed to create tempdir: %v", err)
 	}

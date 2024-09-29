@@ -1,4 +1,4 @@
-// Copyright 2020 Matthew Holt and The Caddy Authors
+// Copyright 2020 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,15 +21,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
-	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
-	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/httpkenginefile"
+	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
 )
 
 func init() {
-	caddy.RegisterModule(Metrics{})
-	httpcaddyfile.RegisterHandlerDirective("metrics", parseCaddyfile)
+	kengine.RegisterModule(Metrics{})
+	httpkenginefile.RegisterHandlerDirective("metrics", parseKenginefile)
 }
 
 // Metrics is a module that serves a /metrics endpoint so that any gathered
@@ -43,11 +43,11 @@ type Metrics struct {
 	DisableOpenMetrics bool `json:"disable_openmetrics,omitempty"`
 }
 
-// CaddyModule returns the Caddy module information.
-func (Metrics) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
+// KengineModule returns the Kengine module information.
+func (Metrics) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
 		ID:  "http.handlers.metrics",
-		New: func() caddy.Module { return new(Metrics) },
+		New: func() kengine.Module { return new(Metrics) },
 	}
 }
 
@@ -60,24 +60,24 @@ func (l *zapLogger) Println(v ...any) {
 }
 
 // Provision sets up m.
-func (m *Metrics) Provision(ctx caddy.Context) error {
+func (m *Metrics) Provision(ctx kengine.Context) error {
 	log := ctx.Logger()
 	m.metricsHandler = createMetricsHandler(&zapLogger{log}, !m.DisableOpenMetrics)
 	return nil
 }
 
-func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
+func parseKenginefile(h httpkenginefile.Helper) (kenginehttp.MiddlewareHandler, error) {
 	var m Metrics
-	err := m.UnmarshalCaddyfile(h.Dispenser)
+	err := m.UnmarshalKenginefile(h.Dispenser)
 	return m, err
 }
 
-// UnmarshalCaddyfile sets up the handler from Caddyfile tokens. Syntax:
+// UnmarshalKenginefile sets up the handler from Kenginefile tokens. Syntax:
 //
 //	metrics [<matcher>] {
 //	    disable_openmetrics
 //	}
-func (m *Metrics) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (m *Metrics) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume directive name
 	args := d.RemainingArgs()
 	if len(args) > 0 {
@@ -95,16 +95,16 @@ func (m *Metrics) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	return nil
 }
 
-func (m Metrics) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
+func (m Metrics) ServeHTTP(w http.ResponseWriter, r *http.Request, next kenginehttp.Handler) error {
 	m.metricsHandler.ServeHTTP(w, r)
 	return nil
 }
 
 // Interface guards
 var (
-	_ caddy.Provisioner           = (*Metrics)(nil)
-	_ caddyhttp.MiddlewareHandler = (*Metrics)(nil)
-	_ caddyfile.Unmarshaler       = (*Metrics)(nil)
+	_ kengine.Provisioner           = (*Metrics)(nil)
+	_ kenginehttp.MiddlewareHandler = (*Metrics)(nil)
+	_ kenginefile.Unmarshaler       = (*Metrics)(nil)
 )
 
 func createMetricsHandler(logger promhttp.Logger, enableOpenMetrics bool) http.Handler {

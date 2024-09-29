@@ -3,20 +3,20 @@ package metrics
 import (
 	"testing"
 
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
-func TestMetricsUnmarshalCaddyfile(t *testing.T) {
+func TestMetricsUnmarshalKenginefile(t *testing.T) {
 	m := &Metrics{}
-	d := caddyfile.NewTestDispenser(`metrics bogus`)
-	err := m.UnmarshalCaddyfile(d)
+	d := kenginefile.NewTestDispenser(`metrics bogus`)
+	err := m.UnmarshalKenginefile(d)
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	m = &Metrics{}
-	d = caddyfile.NewTestDispenser(`metrics`)
-	err = m.UnmarshalCaddyfile(d)
+	d = kenginefile.NewTestDispenser(`metrics`)
+	err = m.UnmarshalKenginefile(d)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -26,8 +26,8 @@ func TestMetricsUnmarshalCaddyfile(t *testing.T) {
 	}
 
 	m = &Metrics{}
-	d = caddyfile.NewTestDispenser(`metrics { disable_openmetrics }`)
-	err = m.UnmarshalCaddyfile(d)
+	d = kenginefile.NewTestDispenser(`metrics { disable_openmetrics }`)
+	err = m.UnmarshalKenginefile(d)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -37,8 +37,8 @@ func TestMetricsUnmarshalCaddyfile(t *testing.T) {
 	}
 
 	m = &Metrics{}
-	d = caddyfile.NewTestDispenser(`metrics { bogus }`)
-	err = m.UnmarshalCaddyfile(d)
+	d = kenginefile.NewTestDispenser(`metrics { bogus }`)
+	err = m.UnmarshalKenginefile(d)
 	if err == nil {
 		t.Errorf("expected error: %v", err)
 	}

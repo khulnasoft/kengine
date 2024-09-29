@@ -1,4 +1,4 @@
-// Copyright 2020 Matthew Holt and The Caddy Authors
+// Copyright 2020 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package metrics
 import (
 	"net/http"
 
-	"github.com/caddyserver/caddy/v2"
+	"github.com/khulnasoft/kengine/v2"
 )
 
 func init() {
-	caddy.RegisterModule(AdminMetrics{})
+	kengine.RegisterModule(AdminMetrics{})
 }
 
 // AdminMetrics is a module that serves a metrics endpoint so that any gathered
@@ -31,25 +31,25 @@ func init() {
 // Admin API is disabled.
 type AdminMetrics struct{}
 
-// CaddyModule returns the Caddy module information.
-func (AdminMetrics) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
+// KengineModule returns the Kengine module information.
+func (AdminMetrics) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
 		ID:  "admin.api.metrics",
-		New: func() caddy.Module { return new(AdminMetrics) },
+		New: func() kengine.Module { return new(AdminMetrics) },
 	}
 }
 
 // Routes returns a route for the /metrics endpoint.
-func (m *AdminMetrics) Routes() []caddy.AdminRoute {
+func (m *AdminMetrics) Routes() []kengine.AdminRoute {
 	metricsHandler := createMetricsHandler(nil, false)
-	h := caddy.AdminHandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+	h := kengine.AdminHandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 		metricsHandler.ServeHTTP(w, r)
 		return nil
 	})
-	return []caddy.AdminRoute{{Pattern: "/metrics", Handler: h}}
+	return []kengine.AdminRoute{{Pattern: "/metrics", Handler: h}}
 }
 
 // Interface guards
 var (
-	_ caddy.AdminRouter = (*AdminMetrics)(nil)
+	_ kengine.AdminRouter = (*AdminMetrics)(nil)
 )

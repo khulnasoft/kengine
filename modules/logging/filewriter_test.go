@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
 func TestFileCreationMode(t *testing.T) {
@@ -72,7 +72,7 @@ func TestFileCreationMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir, err := os.MkdirTemp("", "caddytest")
+			dir, err := os.MkdirTemp("", "kenginetest")
 			if err != nil {
 				t.Fatalf("failed to create tempdir: %v", err)
 			}
@@ -102,7 +102,7 @@ func TestFileRotationPreserveMode(t *testing.T) {
 	m := syscall.Umask(0o000)
 	defer syscall.Umask(m)
 
-	dir, err := os.MkdirTemp("", "caddytest")
+	dir, err := os.MkdirTemp("", "kenginetest")
 	if err != nil {
 		t.Fatalf("failed to create tempdir: %v", err)
 	}
@@ -176,13 +176,13 @@ func TestFileRotationPreserveMode(t *testing.T) {
 func TestFileModeConfig(t *testing.T) {
 	tests := []struct {
 		name    string
-		d       *caddyfile.Dispenser
+		d       *kenginefile.Dispenser
 		fw      FileWriter
 		wantErr bool
 	}{
 		{
 			name: "set mode",
-			d: caddyfile.NewTestDispenser(`
+			d: kenginefile.NewTestDispenser(`
 file test.log {
 	mode 0666
 }
@@ -194,7 +194,7 @@ file test.log {
 		},
 		{
 			name: "set mode 3 digits",
-			d: caddyfile.NewTestDispenser(`
+			d: kenginefile.NewTestDispenser(`
 file test.log {
 	mode 666
 }
@@ -206,7 +206,7 @@ file test.log {
 		},
 		{
 			name: "set mode 2 digits",
-			d: caddyfile.NewTestDispenser(`
+			d: kenginefile.NewTestDispenser(`
 file test.log {
 	mode 66
 }
@@ -218,7 +218,7 @@ file test.log {
 		},
 		{
 			name: "set mode 1 digits",
-			d: caddyfile.NewTestDispenser(`
+			d: kenginefile.NewTestDispenser(`
 file test.log {
 	mode 6
 }
@@ -230,7 +230,7 @@ file test.log {
 		},
 		{
 			name: "invalid mode",
-			d: caddyfile.NewTestDispenser(`
+			d: kenginefile.NewTestDispenser(`
 file test.log {
 	mode foobar
 }
@@ -243,8 +243,8 @@ file test.log {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fw := &FileWriter{}
-			if err := fw.UnmarshalCaddyfile(tt.d); (err != nil) != tt.wantErr {
-				t.Fatalf("UnmarshalCaddyfile() error = %v, want %v", err, tt.wantErr)
+			if err := fw.UnmarshalKenginefile(tt.d); (err != nil) != tt.wantErr {
+				t.Fatalf("UnmarshalKenginefile() error = %v, want %v", err, tt.wantErr)
 			}
 			if fw.Mode != tt.fw.Mode {
 				t.Errorf("got mode %v, want %v", fw.Mode, tt.fw.Mode)
@@ -350,7 +350,7 @@ func TestFileModeModification(t *testing.T) {
 	m := syscall.Umask(0o000)
 	defer syscall.Umask(m)
 
-	dir, err := os.MkdirTemp("", "caddytest")
+	dir, err := os.MkdirTemp("", "kenginetest")
 	if err != nil {
 		t.Fatalf("failed to create tempdir: %v", err)
 	}

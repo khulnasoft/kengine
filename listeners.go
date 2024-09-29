@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"context"
@@ -35,7 +35,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 
-	"github.com/caddyserver/caddy/v2/internal"
+	"github.com/khulnasoft/kengine/v2/internal"
 )
 
 // NetworkAddress represents one or more network addresses.
@@ -111,7 +111,7 @@ func (na NetworkAddress) ListenAll(ctx context.Context, config net.ListenConfig)
 // context may be used to cancel long operations early. The context is not used
 // to close the listener after it has been created.
 //
-// Caddy's listeners can overlap each other: multiple listeners may be created on
+// Kengine's listeners can overlap each other: multiple listeners may be created on
 // the same socket at the same time. This is useful because during config changes,
 // the new config is started while the old config is still running. How this is
 // accomplished varies by platform and network type. For example, on Unix, SO_REUSEPORT
@@ -401,7 +401,7 @@ func JoinNetworkAddress(network, host, port string) string {
 	return a
 }
 
-// ListenQUIC returns a quic.EarlyListener suitable for use in a Caddy module.
+// ListenQUIC returns a quic.EarlyListener suitable for use in a Kengine module.
 // The network will be transformed into a QUIC-compatible type (if unix, then
 // unixgram will be used; otherwise, udp will be used).
 //
@@ -480,7 +480,7 @@ type contextAndCancelFunc struct {
 }
 
 // sharedQUICState manages GetConfigForClient
-// see issue: https://github.com/caddyserver/caddy/pull/4849
+// see issue: https://github.com/khulnasoft/kengine/pull/4849
 type sharedQUICState struct {
 	rmu           sync.RWMutex
 	tlsConfs      map[*tls.Config]contextAndCancelFunc
@@ -607,7 +607,7 @@ func (fcql *fakeCloseQuicListener) Close() error {
 	return nil
 }
 
-// RegisterNetwork registers a network type with Caddy so that if a listener is
+// RegisterNetwork registers a network type with Kengine so that if a listener is
 // created for that network type, getListener will be invoked to get the listener.
 // This should be called during init() and will panic if the network type is standard
 // or reserved, or if it is already registered. EXPERIMENTAL and subject to change.
@@ -648,7 +648,7 @@ func listenerKey(network, addr string) string {
 }
 
 // ListenerFunc is a function that can return a listener given a network and address.
-// The listeners must be capable of overlapping: with Caddy, new configs are loaded
+// The listeners must be capable of overlapping: with Kengine, new configs are loaded
 // before old ones are unloaded, so listeners may overlap briefly if the configs
 // both need the same listener. EXPERIMENTAL and subject to change.
 type ListenerFunc func(ctx context.Context, network, addr string, cfg net.ListenConfig) (any, error)
@@ -658,7 +658,7 @@ var networkTypes = map[string]ListenerFunc{}
 // ListenerWrapper is a type that wraps a listener
 // so it can modify the input listener's methods.
 // Modules that implement this interface are found
-// in the caddy.listeners namespace. Usually, to
+// in the kengine.listeners namespace. Usually, to
 // wrap a listener, you will define your own struct
 // type that embeds the input listener, then
 // implement your own methods that you want to wrap,

@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"encoding/json"
@@ -35,7 +35,7 @@ func init() {
 	RegisterModule(DiscardWriter{})
 }
 
-// Logging facilitates logging within Caddy. The default log is
+// Logging facilitates logging within Kengine. The default log is
 // called "default" and you can customize it. You can also define
 // additional logs.
 //
@@ -52,7 +52,7 @@ func init() {
 // "http.handlers", because all HTTP handler module names have
 // that prefix.
 //
-// Caddy logs (except the sink) are zero-allocation, so they are
+// Kengine logs (except the sink) are zero-allocation, so they are
 // very high-performing in terms of memory and CPU time. Enabling
 // sampling can further increase throughput on extremely high-load
 // servers.
@@ -60,7 +60,7 @@ type Logging struct {
 	// Sink is the destination for all unstructured logs emitted
 	// from Go's standard library logger. These logs are common
 	// in dependencies that are not designed specifically for use
-	// in Caddy. Because it is global and unstructured, the sink
+	// in Kengine. Because it is global and unstructured, the sink
 	// lacks most advanced features and customizations.
 	Sink *SinkLog `json:"sink,omitempty"`
 
@@ -97,7 +97,7 @@ func (logging *Logging) openLogs(ctx Context) error {
 		}
 	}
 
-	// as a special case, set up the default structured Caddy log next
+	// as a special case, set up the default structured Kengine log next
 	if err := logging.setupNewDefault(ctx); err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func (logging *Logging) setupNewDefault(ctx Context) error {
 		var err error
 		newDefault, err = newDefaultProductionLog()
 		if err != nil {
-			return fmt.Errorf("setting up default Caddy log: %v", err)
+			return fmt.Errorf("setting up default Kengine log: %v", err)
 		}
 		logging.Logs[DefaultLoggerName] = newDefault.CustomLog
 	}
@@ -163,7 +163,7 @@ func (logging *Logging) setupNewDefault(ctx Context) error {
 	}
 	newDefault.logger = zap.New(newDefault.CustomLog.core, options...)
 
-	// redirect the default caddy logs
+	// redirect the default kengine logs
 	defaultLoggerMu.Lock()
 	oldDefault := defaultLogger
 	defaultLogger = newDefault
@@ -205,7 +205,7 @@ func (logging *Logging) closeLogs() error {
 
 // Logger returns a logger that is ready for the module to use.
 func (logging *Logging) Logger(mod Module) *zap.Logger {
-	modID := string(mod.CaddyModule().ID)
+	modID := string(mod.KengineModule().ID)
 	var cores []zapcore.Core
 	var options []zap.Option
 
@@ -287,14 +287,14 @@ func (wdest writerDestructor) Destruct() error {
 // BaseLog contains the common logging parameters for logging.
 type BaseLog struct {
 	// The module that writes out log entries for the sink.
-	WriterRaw json.RawMessage `json:"writer,omitempty" caddy:"namespace=caddy.logging.writers inline_key=output"`
+	WriterRaw json.RawMessage `json:"writer,omitempty" kengine:"namespace=kengine.logging.writers inline_key=output"`
 
 	// The encoder is how the log entries are formatted or encoded.
-	EncoderRaw json.RawMessage `json:"encoder,omitempty" caddy:"namespace=caddy.logging.encoders inline_key=format"`
+	EncoderRaw json.RawMessage `json:"encoder,omitempty" kengine:"namespace=kengine.logging.encoders inline_key=format"`
 
 	// Tees entries through a zap.Core module which can extract
 	// log entry metadata and fields for further processing.
-	CoreRaw json.RawMessage `json:"core,omitempty" caddy:"namespace=caddy.logging.cores inline_key=module"`
+	CoreRaw json.RawMessage `json:"core,omitempty" kengine:"namespace=kengine.logging.cores inline_key=module"`
 
 	// Level is the minimum level to emit, and is inclusive.
 	// Possible levels: DEBUG, INFO, WARN, ERROR, PANIC, and FATAL
@@ -421,7 +421,7 @@ func (cl *BaseLog) buildOptions() ([]zap.Option, error) {
 	if cl.WithStacktrace != "" {
 		levelEnabler, err := parseLevel(cl.WithStacktrace)
 		if err != nil {
-			return options, fmt.Errorf("setting up default Caddy log: %v", err)
+			return options, fmt.Errorf("setting up default Kengine log: %v", err)
 		}
 		options = append(options, zap.AddStacktrace(levelEnabler))
 	}
@@ -431,7 +431,7 @@ func (cl *BaseLog) buildOptions() ([]zap.Option, error) {
 // SinkLog configures the default Go standard library
 // global logger in the log package. This is necessary because
 // module dependencies which are not built specifically for
-// Caddy will use the standard logger. This is also known as
+// Kengine will use the standard logger. This is also known as
 // the "sink" logger.
 type SinkLog struct {
 	BaseLog
@@ -631,26 +631,26 @@ type (
 	DiscardWriter struct{}
 )
 
-// CaddyModule returns the Caddy module information.
-func (StdoutWriter) CaddyModule() ModuleInfo {
+// KengineModule returns the Kengine module information.
+func (StdoutWriter) KengineModule() ModuleInfo {
 	return ModuleInfo{
-		ID:  "caddy.logging.writers.stdout",
+		ID:  "kengine.logging.writers.stdout",
 		New: func() Module { return new(StdoutWriter) },
 	}
 }
 
-// CaddyModule returns the Caddy module information.
-func (StderrWriter) CaddyModule() ModuleInfo {
+// KengineModule returns the Kengine module information.
+func (StderrWriter) KengineModule() ModuleInfo {
 	return ModuleInfo{
-		ID:  "caddy.logging.writers.stderr",
+		ID:  "kengine.logging.writers.stderr",
 		New: func() Module { return new(StderrWriter) },
 	}
 }
 
-// CaddyModule returns the Caddy module information.
-func (DiscardWriter) CaddyModule() ModuleInfo {
+// KengineModule returns the Kengine module information.
+func (DiscardWriter) KengineModule() ModuleInfo {
 	return ModuleInfo{
-		ID:  "caddy.logging.writers.discard",
+		ID:  "kengine.logging.writers.discard",
 		New: func() Module { return new(DiscardWriter) },
 	}
 }

@@ -3,14 +3,14 @@ package logging
 import (
 	"testing"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
 	"go.uber.org/zap/zapcore"
 )
 
 func TestIPMaskSingleValue(t *testing.T) {
 	f := IPMaskFilter{IPv4MaskRaw: 16, IPv6MaskRaw: 32}
-	f.Provision(caddy.Context{})
+	f.Provision(kengine.Context{})
 
 	out := f.Filter(zapcore.Field{String: "255.255.255.255"})
 	if out.String != "255.255.0.0" {
@@ -30,7 +30,7 @@ func TestIPMaskSingleValue(t *testing.T) {
 
 func TestIPMaskCommaValue(t *testing.T) {
 	f := IPMaskFilter{IPv4MaskRaw: 16, IPv6MaskRaw: 32}
-	f.Provision(caddy.Context{})
+	f.Provision(kengine.Context{})
 
 	out := f.Filter(zapcore.Field{String: "255.255.255.255, 244.244.244.244"})
 	if out.String != "255.255.0.0, 244.244.0.0" {
@@ -50,13 +50,13 @@ func TestIPMaskCommaValue(t *testing.T) {
 
 func TestIPMaskMultiValue(t *testing.T) {
 	f := IPMaskFilter{IPv4MaskRaw: 16, IPv6MaskRaw: 32}
-	f.Provision(caddy.Context{})
+	f.Provision(kengine.Context{})
 
-	out := f.Filter(zapcore.Field{Interface: caddyhttp.LoggableStringArray{
+	out := f.Filter(zapcore.Field{Interface: kenginehttp.LoggableStringArray{
 		"255.255.255.255",
 		"244.244.244.244",
 	}})
-	arr, ok := out.Interface.(caddyhttp.LoggableStringArray)
+	arr, ok := out.Interface.(kenginehttp.LoggableStringArray)
 	if !ok {
 		t.Fatalf("field is wrong type: %T", out.Integer)
 	}
@@ -67,11 +67,11 @@ func TestIPMaskMultiValue(t *testing.T) {
 		t.Fatalf("field entry 1 has not been filtered: %s", arr[1])
 	}
 
-	out = f.Filter(zapcore.Field{Interface: caddyhttp.LoggableStringArray{
+	out = f.Filter(zapcore.Field{Interface: kenginehttp.LoggableStringArray{
 		"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
 		"ff00:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
 	}})
-	arr, ok = out.Interface.(caddyhttp.LoggableStringArray)
+	arr, ok = out.Interface.(kenginehttp.LoggableStringArray)
 	if !ok {
 		t.Fatalf("field is wrong type: %T", out.Integer)
 	}
@@ -117,11 +117,11 @@ func TestQueryFilterMultiValue(t *testing.T) {
 		t.Fatalf("the filter must be valid")
 	}
 
-	out := f.Filter(zapcore.Field{Interface: caddyhttp.LoggableStringArray{
+	out := f.Filter(zapcore.Field{Interface: kenginehttp.LoggableStringArray{
 		"/path1?foo=a&foo=b&bar=c&bar=d&baz=e&hash=hashed",
 		"/path2?foo=c&foo=d&bar=e&bar=f&baz=g&hash=hashed",
 	}})
-	arr, ok := out.Interface.(caddyhttp.LoggableStringArray)
+	arr, ok := out.Interface.(kenginehttp.LoggableStringArray)
 	if !ok {
 		t.Fatalf("field is wrong type: %T", out.Interface)
 	}
@@ -159,11 +159,11 @@ func TestCookieFilter(t *testing.T) {
 		{hashAction, "hash", ""},
 	}}
 
-	out := f.Filter(zapcore.Field{Interface: caddyhttp.LoggableStringArray{
+	out := f.Filter(zapcore.Field{Interface: kenginehttp.LoggableStringArray{
 		"foo=a; foo=b; bar=c; bar=d; baz=e; hash=hashed",
 	}})
-	outval := out.Interface.(caddyhttp.LoggableStringArray)
-	expected := caddyhttp.LoggableStringArray{
+	outval := out.Interface.(kenginehttp.LoggableStringArray)
+	expected := kenginehttp.LoggableStringArray{
 		"foo=REDACTED; foo=REDACTED; baz=e; hash=1a06df82",
 	}
 	if outval[0] != expected[0] {
@@ -189,7 +189,7 @@ func TestValidateCookieFilter(t *testing.T) {
 
 func TestRegexpFilterSingleValue(t *testing.T) {
 	f := RegexpFilter{RawRegexp: `secret`, Value: "REDACTED"}
-	f.Provision(caddy.Context{})
+	f.Provision(kengine.Context{})
 
 	out := f.Filter(zapcore.Field{String: "foo-secret-bar"})
 	if out.String != "foo-REDACTED-bar" {
@@ -199,10 +199,10 @@ func TestRegexpFilterSingleValue(t *testing.T) {
 
 func TestRegexpFilterMultiValue(t *testing.T) {
 	f := RegexpFilter{RawRegexp: `secret`, Value: "REDACTED"}
-	f.Provision(caddy.Context{})
+	f.Provision(kengine.Context{})
 
-	out := f.Filter(zapcore.Field{Interface: caddyhttp.LoggableStringArray{"foo-secret-bar", "bar-secret-foo"}})
-	arr, ok := out.Interface.(caddyhttp.LoggableStringArray)
+	out := f.Filter(zapcore.Field{Interface: kenginehttp.LoggableStringArray{"foo-secret-bar", "bar-secret-foo"}})
+	arr, ok := out.Interface.(kenginehttp.LoggableStringArray)
 	if !ok {
 		t.Fatalf("field is wrong type: %T", out.Integer)
 	}
@@ -226,8 +226,8 @@ func TestHashFilterSingleValue(t *testing.T) {
 func TestHashFilterMultiValue(t *testing.T) {
 	f := HashFilter{}
 
-	out := f.Filter(zapcore.Field{Interface: caddyhttp.LoggableStringArray{"foo", "bar"}})
-	arr, ok := out.Interface.(caddyhttp.LoggableStringArray)
+	out := f.Filter(zapcore.Field{Interface: kenginehttp.LoggableStringArray{"foo", "bar"}})
+	arr, ok := out.Interface.(kenginehttp.LoggableStringArray)
 	if !ok {
 		t.Fatalf("field is wrong type: %T", out.Integer)
 	}

@@ -1,6 +1,6 @@
 //go:build freebsd
 
-package caddy
+package kengine
 
 import "golang.org/x/sys/unix"
 

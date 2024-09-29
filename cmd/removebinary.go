@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
 
 //go:build !windows
 
-package caddycmd
+package kenginecmd
 
 import (
 	"os"
 )
 
-// removeCaddyBinary removes the Caddy binary at the given path.
+// removeKengineBinary removes the Kengine binary at the given path.
 //
 // On any non-Windows OS, this simply calls os.Remove, since they should
 // probably not exhibit any issue with processes deleting themselves.
-func removeCaddyBinary(path string) error {
+func removeKengineBinary(path string) error {
 	return os.Remove(path)
 }

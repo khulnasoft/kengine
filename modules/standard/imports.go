@@ -1,18 +1,18 @@
 package standard
 
 import (
-	// standard Caddy modules
-	_ "github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
-	_ "github.com/caddyserver/caddy/v2/modules/caddyevents"
-	_ "github.com/caddyserver/caddy/v2/modules/caddyevents/eventsconfig"
-	_ "github.com/caddyserver/caddy/v2/modules/caddyfs"
-	_ "github.com/caddyserver/caddy/v2/modules/caddyhttp/standard"
-	_ "github.com/caddyserver/caddy/v2/modules/caddypki"
-	_ "github.com/caddyserver/caddy/v2/modules/caddypki/acmeserver"
-	_ "github.com/caddyserver/caddy/v2/modules/caddytls"
-	_ "github.com/caddyserver/caddy/v2/modules/caddytls/distributedstek"
-	_ "github.com/caddyserver/caddy/v2/modules/caddytls/standardstek"
-	_ "github.com/caddyserver/caddy/v2/modules/filestorage"
-	_ "github.com/caddyserver/caddy/v2/modules/logging"
-	_ "github.com/caddyserver/caddy/v2/modules/metrics"
+	// standard Kengine modules
+	_ "github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	_ "github.com/khulnasoft/kengine/v2/modules/kengineevents"
+	_ "github.com/khulnasoft/kengine/v2/modules/kengineevents/eventsconfig"
+	_ "github.com/khulnasoft/kengine/v2/modules/kenginefs"
+	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/standard"
+	_ "github.com/khulnasoft/kengine/v2/modules/kenginepki"
+	_ "github.com/khulnasoft/kengine/v2/modules/kenginepki/acmeserver"
+	_ "github.com/khulnasoft/kengine/v2/modules/kenginetls"
+	_ "github.com/khulnasoft/kengine/v2/modules/kenginetls/distributedstek"
+	_ "github.com/khulnasoft/kengine/v2/modules/kenginetls/standardstek"
+	_ "github.com/khulnasoft/kengine/v2/modules/filestorage"
+	_ "github.com/khulnasoft/kengine/v2/modules/logging"
+	_ "github.com/khulnasoft/kengine/v2/modules/metrics"
 )

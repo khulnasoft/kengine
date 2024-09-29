@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"os"
 	"path/filepath"
 	"runtime"
 
-	"github.com/caddyserver/certmagic"
+	"github.com/khulnasoft-lab/certmagic"
 	"go.uber.org/zap"
 )
 
@@ -27,7 +27,7 @@ import (
 // to a valid, usable certmagic.Storage value. (The
 // value might be short-lived.) This interface allows
 // us to adapt any CertMagic storage implementation
-// into a consistent API for Caddy configuration.
+// into a consistent API for Kengine configuration.
 type StorageConverter interface {
 	CertMagicStorage() (certmagic.Storage, error)
 }
@@ -71,10 +71,10 @@ func homeDirUnsafe() string {
 
 // AppConfigDir returns the directory where to store user's config.
 //
-// If XDG_CONFIG_HOME is set, it returns: $XDG_CONFIG_HOME/caddy.
+// If XDG_CONFIG_HOME is set, it returns: $XDG_CONFIG_HOME/kengine.
 // Otherwise, os.UserConfigDir() is used; if successful, it appends
-// "Caddy" (Windows & Mac) or "caddy" (every other OS) to the path.
-// If it returns an error, the fallback path "./caddy" is returned.
+// "Kengine" (Windows & Mac) or "kengine" (every other OS) to the path.
+// If it returns an error, the fallback path "./kengine" is returned.
 //
 // The config directory is not guaranteed to be different from
 // AppDataDir().
@@ -85,35 +85,35 @@ func homeDirUnsafe() string {
 // Ref: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 func AppConfigDir() string {
 	if basedir := os.Getenv("XDG_CONFIG_HOME"); basedir != "" {
-		return filepath.Join(basedir, "caddy")
+		return filepath.Join(basedir, "kengine")
 	}
 	basedir, err := os.UserConfigDir()
 	if err != nil {
 		Log().Warn("unable to determine directory for user configuration; falling back to current directory", zap.Error(err))
-		return "./caddy"
+		return "./kengine"
 	}
-	subdir := "caddy"
+	subdir := "kengine"
 	switch runtime.GOOS {
 	case "windows", "darwin":
-		subdir = "Caddy"
+		subdir = "Kengine"
 	}
 	return filepath.Join(basedir, subdir)
 }
 
 // AppDataDir returns a directory path that is suitable for storing
 // application data on disk. It uses the environment for finding the
-// best place to store data, and appends a "caddy" or "Caddy" (depending
+// best place to store data, and appends a "kengine" or "Kengine" (depending
 // on OS and environment) subdirectory.
 //
 // For a base directory path:
-// If XDG_DATA_HOME is set, it returns: $XDG_DATA_HOME/caddy; otherwise,
-// on Windows it returns: %AppData%/Caddy,
-// on Mac: $HOME/Library/Application Support/Caddy,
-// on Plan9: $home/lib/caddy,
-// on Android: $HOME/caddy,
-// and on everything else: $HOME/.local/share/caddy.
+// If XDG_DATA_HOME is set, it returns: $XDG_DATA_HOME/kengine; otherwise,
+// on Windows it returns: %AppData%/Kengine,
+// on Mac: $HOME/Library/Application Support/Kengine,
+// on Plan9: $home/lib/kengine,
+// on Android: $HOME/kengine,
+// and on everything else: $HOME/.local/share/kengine.
 //
-// If a data directory cannot be determined, it returns "./caddy"
+// If a data directory cannot be determined, it returns "./kengine"
 // (this is not ideal, and the environment should be fixed).
 //
 // The data directory is not guaranteed to be different from AppConfigDir().
@@ -121,40 +121,40 @@ func AppConfigDir() string {
 // Ref: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 func AppDataDir() string {
 	if basedir := os.Getenv("XDG_DATA_HOME"); basedir != "" {
-		return filepath.Join(basedir, "caddy")
+		return filepath.Join(basedir, "kengine")
 	}
 	switch runtime.GOOS {
 	case "windows":
 		appData := os.Getenv("AppData")
 		if appData != "" {
-			return filepath.Join(appData, "Caddy")
+			return filepath.Join(appData, "Kengine")
 		}
 	case "darwin":
 		home := homeDirUnsafe()
 		if home != "" {
-			return filepath.Join(home, "Library", "Application Support", "Caddy")
+			return filepath.Join(home, "Library", "Application Support", "Kengine")
 		}
 	case "plan9":
 		home := homeDirUnsafe()
 		if home != "" {
-			return filepath.Join(home, "lib", "caddy")
+			return filepath.Join(home, "lib", "kengine")
 		}
 	case "android":
 		home := homeDirUnsafe()
 		if home != "" {
-			return filepath.Join(home, "caddy")
+			return filepath.Join(home, "kengine")
 		}
 	default:
 		home := homeDirUnsafe()
 		if home != "" {
-			return filepath.Join(home, ".local", "share", "caddy")
+			return filepath.Join(home, ".local", "share", "kengine")
 		}
 	}
-	return "./caddy"
+	return "./kengine"
 }
 
 // ConfigAutosavePath is the default path to which the last config will be persisted.
 var ConfigAutosavePath = filepath.Join(AppConfigDir(), "autosave.json")
 
-// DefaultStorage is Caddy's default storage module.
+// DefaultStorage is Kengine's default storage module.
 var DefaultStorage = &certmagic.FileStorage{Path: AppDataDir()}

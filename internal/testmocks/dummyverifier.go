@@ -3,27 +3,27 @@ package testmocks
 import (
 	"crypto/x509"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
-	"github.com/caddyserver/caddy/v2/modules/caddytls"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/v2/modules/kenginetls"
 )
 
 func init() {
-	caddy.RegisterModule(new(dummyVerifier))
+	kengine.RegisterModule(new(dummyVerifier))
 }
 
 type dummyVerifier struct{}
 
-// UnmarshalCaddyfile implements caddyfile.Unmarshaler.
-func (dummyVerifier) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile implements kenginefile.Unmarshaler.
+func (dummyVerifier) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	return nil
 }
 
-// CaddyModule implements caddy.Module.
-func (dummyVerifier) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
+// KengineModule implements kengine.Module.
+func (dummyVerifier) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
 		ID: "tls.client_auth.verifier.dummy",
-		New: func() caddy.Module {
+		New: func() kengine.Module {
 			return new(dummyVerifier)
 		},
 	}
@@ -35,7 +35,7 @@ func (dummyVerifier) VerifyClientCertificate(rawCerts [][]byte, verifiedChains [
 }
 
 var (
-	_ caddy.Module                       = dummyVerifier{}
-	_ caddytls.ClientCertificateVerifier = dummyVerifier{}
-	_ caddyfile.Unmarshaler              = dummyVerifier{}
+	_ kengine.Module                       = dummyVerifier{}
+	_ kenginetls.ClientCertificateVerifier = dummyVerifier{}
+	_ kenginefile.Unmarshaler              = dummyVerifier{}
 )

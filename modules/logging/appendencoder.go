@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,19 +26,19 @@ import (
 	"go.uber.org/zap/zapcore"
 	"golang.org/x/term"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
 func init() {
-	caddy.RegisterModule(AppendEncoder{})
+	kengine.RegisterModule(AppendEncoder{})
 }
 
 // AppendEncoder can be used to add fields to all log entries
 // that pass through it. It is a wrapper around another
 // encoder, which it uses to actually encode the log entries.
-// It is most useful for adding information about the Caddy
+// It is most useful for adding information about the Kengine
 // instance that is producing the log entries, possibly via
 // an environment variable.
 type AppendEncoder struct {
@@ -46,7 +46,7 @@ type AppendEncoder struct {
 	// log entries. If not specified, defaults to "json",
 	// unless the output is a terminal, in which case
 	// it defaults to "console".
-	WrappedRaw json.RawMessage `json:"wrap,omitempty" caddy:"namespace=caddy.logging.encoders inline_key=format"`
+	WrappedRaw json.RawMessage `json:"wrap,omitempty" kengine:"namespace=kengine.logging.encoders inline_key=format"`
 
 	// A map of field names to their values. The values
 	// can be global placeholders (e.g. env vars), or constants.
@@ -55,29 +55,29 @@ type AppendEncoder struct {
 	Fields map[string]any `json:"fields,omitempty"`
 
 	wrapped zapcore.Encoder
-	repl    *caddy.Replacer
+	repl    *kengine.Replacer
 
 	wrappedIsDefault bool
-	ctx              caddy.Context
+	ctx              kengine.Context
 }
 
-// CaddyModule returns the Caddy module information.
-func (AppendEncoder) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.append",
-		New: func() caddy.Module { return new(AppendEncoder) },
+// KengineModule returns the Kengine module information.
+func (AppendEncoder) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.append",
+		New: func() kengine.Module { return new(AppendEncoder) },
 	}
 }
 
 // Provision sets up the encoder.
-func (fe *AppendEncoder) Provision(ctx caddy.Context) error {
+func (fe *AppendEncoder) Provision(ctx kengine.Context) error {
 	fe.ctx = ctx
-	fe.repl = caddy.NewReplacer()
+	fe.repl = kengine.NewReplacer()
 
 	if fe.WrappedRaw == nil {
 		// if wrap is not specified, default to JSON
 		fe.wrapped = &JSONEncoder{}
-		if p, ok := fe.wrapped.(caddy.Provisioner); ok {
+		if p, ok := fe.wrapped.(kengine.Provisioner); ok {
 			if err := p.Provision(ctx); err != nil {
 				return fmt.Errorf("provisioning fallback encoder module: %v", err)
 			}
@@ -99,17 +99,17 @@ func (fe *AppendEncoder) Provision(ctx caddy.Context) error {
 // if the writer is a terminal. If already configured, it passes
 // through the writer so a deeply nested encoder can configure
 // its own default format.
-func (fe *AppendEncoder) ConfigureDefaultFormat(wo caddy.WriterOpener) error {
+func (fe *AppendEncoder) ConfigureDefaultFormat(wo kengine.WriterOpener) error {
 	if !fe.wrappedIsDefault {
-		if cfd, ok := fe.wrapped.(caddy.ConfiguresFormatterDefault); ok {
+		if cfd, ok := fe.wrapped.(kengine.ConfiguresFormatterDefault); ok {
 			return cfd.ConfigureDefaultFormat(wo)
 		}
 		return nil
 	}
 
-	if caddy.IsWriterStandardStream(wo) && term.IsTerminal(int(os.Stderr.Fd())) {
+	if kengine.IsWriterStandardStream(wo) && term.IsTerminal(int(os.Stderr.Fd())) {
 		fe.wrapped = &ConsoleEncoder{}
-		if p, ok := fe.wrapped.(caddy.Provisioner); ok {
+		if p, ok := fe.wrapped.(kengine.Provisioner); ok {
 			if err := p.Provision(fe.ctx); err != nil {
 				return fmt.Errorf("provisioning fallback encoder module: %v", err)
 			}
@@ -118,7 +118,7 @@ func (fe *AppendEncoder) ConfigureDefaultFormat(wo caddy.WriterOpener) error {
 	return nil
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens. Syntax:
+// UnmarshalKenginefile sets up the module from Kenginefile tokens. Syntax:
 //
 //	append {
 //	    wrap <another encoder>
@@ -127,7 +127,7 @@ func (fe *AppendEncoder) ConfigureDefaultFormat(wo caddy.WriterOpener) error {
 //	    }
 //	    <field> <value>
 //	}
-func (fe *AppendEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (fe *AppendEncoder) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume encoder name
 
 	// parse a field
@@ -153,8 +153,8 @@ func (fe *AppendEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				return d.ArgErr()
 			}
 			moduleName := d.Val()
-			moduleID := "caddy.logging.encoders." + moduleName
-			unm, err := caddyfile.UnmarshalModule(d, moduleID)
+			moduleID := "kengine.logging.encoders." + moduleName
+			unm, err := kenginefile.UnmarshalModule(d, moduleID)
 			if err != nil {
 				return err
 			}
@@ -162,7 +162,7 @@ func (fe *AppendEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 			if !ok {
 				return d.Errf("module %s (%T) is not a zapcore.Encoder", moduleID, unm)
 			}
-			fe.WrappedRaw = caddyconfig.JSONModuleObject(enc, "format", moduleName, nil)
+			fe.WrappedRaw = kengineconfig.JSONModuleObject(enc, "format", moduleName, nil)
 
 		case "fields":
 			for nesting := d.Nesting(); d.NextBlock(nesting); {
@@ -352,6 +352,6 @@ func (fe AppendEncoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (
 // Interface guards
 var (
 	_ zapcore.Encoder                  = (*AppendEncoder)(nil)
-	_ caddyfile.Unmarshaler            = (*AppendEncoder)(nil)
-	_ caddy.ConfiguresFormatterDefault = (*AppendEncoder)(nil)
+	_ kenginefile.Unmarshaler            = (*AppendEncoder)(nil)
+	_ kengine.ConfiguresFormatterDefault = (*AppendEncoder)(nil)
 )

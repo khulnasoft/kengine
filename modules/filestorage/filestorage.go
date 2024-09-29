@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 package filestorage
 
 import (
-	"github.com/caddyserver/certmagic"
+	"github.com/khulnasoft-lab/certmagic"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
 func init() {
-	caddy.RegisterModule(FileStorage{})
+	kengine.RegisterModule(FileStorage{})
 }
 
 // FileStorage is a certmagic.Storage wrapper for certmagic.FileStorage.
@@ -31,11 +31,11 @@ type FileStorage struct {
 	Root string `json:"root,omitempty"`
 }
 
-// CaddyModule returns the Caddy module information.
-func (FileStorage) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.storage.file_system",
-		New: func() caddy.Module { return new(FileStorage) },
+// KengineModule returns the Kengine module information.
+func (FileStorage) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.storage.file_system",
+		New: func() kengine.Module { return new(FileStorage) },
 	}
 }
 
@@ -44,8 +44,8 @@ func (s FileStorage) CertMagicStorage() (certmagic.Storage, error) {
 	return &certmagic.FileStorage{Path: s.Root}, nil
 }
 
-// UnmarshalCaddyfile sets up the storage module from Caddyfile tokens.
-func (s *FileStorage) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the storage module from Kenginefile tokens.
+func (s *FileStorage) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	if !d.Next() {
 		return d.Err("expected tokens")
 	}
@@ -80,6 +80,6 @@ func (s *FileStorage) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 // Interface guards
 var (
-	_ caddy.StorageConverter = (*FileStorage)(nil)
-	_ caddyfile.Unmarshaler  = (*FileStorage)(nil)
+	_ kengine.StorageConverter = (*FileStorage)(nil)
+	_ kenginefile.Unmarshaler  = (*FileStorage)(nil)
 )

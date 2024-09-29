@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 )
 
 // SplitUnixSocketPermissionsBits takes a unix socket address in the
-// unusual "path|bits" format (e.g. /run/caddy.sock|0222) and tries
+// unusual "path|bits" format (e.g. /run/kengine.sock|0222) and tries
 // to split it into socket path (host) and permissions bits (port).
 // Colons (":") can't be used as separator, as socket paths on Windows
 // may include a drive letter (e.g. `unix/c:\absolute\path.sock`).

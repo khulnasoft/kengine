@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"bytes"
@@ -40,7 +40,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/caddyserver/certmagic"
+	"github.com/khulnasoft-lab/certmagic"
 	"github.com/cespare/xxhash/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
@@ -49,17 +49,17 @@ import (
 
 func init() {
 	// The hard-coded default `DefaultAdminListen` can be overridden
-	// by setting the `CADDY_ADMIN` environment variable.
+	// by setting the `KENGINE_ADMIN` environment variable.
 	// The environment variable may be used by packagers to change
 	// the default admin address to something more appropriate for
 	// that platform. See #5317 for discussion.
-	if env, exists := os.LookupEnv("CADDY_ADMIN"); exists {
+	if env, exists := os.LookupEnv("KENGINE_ADMIN"); exists {
 		DefaultAdminListen = env
 	}
 }
 
-// AdminConfig configures Caddy's API endpoint, which is used
-// to manage Caddy while it is running.
+// AdminConfig configures Kengine's API endpoint, which is used
+// to manage Kengine while it is running.
 type AdminConfig struct {
 	// If true, the admin endpoint will be completely disabled.
 	// Note that this makes any runtime changes to the config
@@ -69,8 +69,8 @@ type AdminConfig struct {
 
 	// The address to which the admin endpoint's listener should
 	// bind itself. Can be any single network address that can be
-	// parsed by Caddy. Accepts placeholders.
-	// Default: the value of the `CADDY_ADMIN` environment variable,
+	// parsed by Kengine. Accepts placeholders.
+	// Default: the value of the `KENGINE_ADMIN` environment variable,
 	// or `localhost:2019` otherwise.
 	//
 	// Remember: When changing this value through a config reload,
@@ -122,18 +122,18 @@ type AdminConfig struct {
 type ConfigSettings struct {
 	// Whether to keep a copy of the active config on disk. Default is true.
 	// Note that "pulled" dynamic configs (using the neighboring "load" module)
-	// are not persisted; only configs that are pushed to Caddy get persisted.
+	// are not persisted; only configs that are pushed to Kengine get persisted.
 	Persist *bool `json:"persist,omitempty"`
 
 	// Loads a new configuration. This is helpful if your configs are
-	// managed elsewhere and you want Caddy to pull its config dynamically
+	// managed elsewhere and you want Kengine to pull its config dynamically
 	// when it starts. The pulled config completely replaces the current
 	// one, just like any other config load. It is an error if a pulled
 	// config is configured to pull another config without a load_delay,
 	// as this creates a tight loop.
 	//
 	// EXPERIMENTAL: Subject to change.
-	LoadRaw json.RawMessage `json:"load,omitempty" caddy:"namespace=caddy.config_loaders inline_key=module"`
+	LoadRaw json.RawMessage `json:"load,omitempty" kengine:"namespace=kengine.config_loaders inline_key=module"`
 
 	// The duration after which to load config. If set, config will be pulled
 	// from the config loader after this duration. A delay is required if a
@@ -160,7 +160,7 @@ type IdentityConfig struct {
 	// certificate(s). Default: ACME issuers configured for
 	// ZeroSSL and Let's Encrypt. Be sure to change this if you
 	// require credentials for private identifiers.
-	IssuersRaw []json.RawMessage `json:"issuers,omitempty" caddy:"namespace=tls.issuance inline_key=module"`
+	IssuersRaw []json.RawMessage `json:"issuers,omitempty" kengine:"namespace=tls.issuance inline_key=module"`
 
 	issuers []certmagic.Issuer
 }
@@ -472,7 +472,7 @@ func manageIdentity(ctx Context, cfg *Config) error {
 	}
 
 	// set default issuers; this is pretty hacky because we can't
-	// import the caddytls package -- but it works
+	// import the kenginetls package -- but it works
 	if cfg.Admin.Identity.IssuersRaw == nil {
 		cfg.Admin.Identity.IssuersRaw = []json.RawMessage{
 			json.RawMessage(`{"module": "acme"}`),
@@ -499,10 +499,10 @@ func manageIdentity(ctx Context, cfg *Config) error {
 	cmCfg := cfg.Admin.Identity.certmagicConfig(logger, true)
 
 	// issuers have circular dependencies with the configs because,
-	// as explained in the caddytls package, they need access to the
+	// as explained in the kenginetls package, they need access to the
 	// correct storage and cache to solve ACME challenges
 	for _, issuer := range cfg.Admin.Identity.issuers {
-		// avoid import cycle with caddytls package, so manually duplicate the interface here, yuck
+		// avoid import cycle with kenginetls package, so manually duplicate the interface here, yuck
 		if annoying, ok := issuer.(interface{ SetConfig(cfg *certmagic.Config) }); ok {
 			annoying.SetConfig(cmCfg)
 		}

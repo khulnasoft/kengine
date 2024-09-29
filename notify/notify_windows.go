@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package notify
 import "golang.org/x/sys/windows/svc"
 
 // globalStatus store windows service status, it can be
-// use to notify caddy status.
+// use to notify kengine status.
 var globalStatus chan<- svc.Status
 
 func SetGlobalStatus(status chan<- svc.Status) {

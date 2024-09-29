@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/caddyserver/caddy/v2/internal"
+	"github.com/khulnasoft/kengine/v2/internal"
 )
 
 func TestSplitNetworkAddress(t *testing.T) {

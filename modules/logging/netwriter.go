@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
 func init() {
-	caddy.RegisterModule(NetWriter{})
+	kengine.RegisterModule(NetWriter{})
 }
 
 // NetWriter implements a log writer that outputs to a network socket. If
@@ -38,33 +38,33 @@ type NetWriter struct {
 	Address string `json:"address,omitempty"`
 
 	// The timeout to wait while connecting to the socket.
-	DialTimeout caddy.Duration `json:"dial_timeout,omitempty"`
+	DialTimeout kengine.Duration `json:"dial_timeout,omitempty"`
 
 	// If enabled, allow connections errors when first opening the
 	// writer. The error and subsequent log entries will be reported
 	// to stderr instead until a connection can be re-established.
 	SoftStart bool `json:"soft_start,omitempty"`
 
-	addr caddy.NetworkAddress
+	addr kengine.NetworkAddress
 }
 
-// CaddyModule returns the Caddy module information.
-func (NetWriter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.writers.net",
-		New: func() caddy.Module { return new(NetWriter) },
+// KengineModule returns the Kengine module information.
+func (NetWriter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.writers.net",
+		New: func() kengine.Module { return new(NetWriter) },
 	}
 }
 
 // Provision sets up the module.
-func (nw *NetWriter) Provision(ctx caddy.Context) error {
-	repl := caddy.NewReplacer()
+func (nw *NetWriter) Provision(ctx kengine.Context) error {
+	repl := kengine.NewReplacer()
 	address, err := repl.ReplaceOrErr(nw.Address, true, true)
 	if err != nil {
 		return fmt.Errorf("invalid host in address: %v", err)
 	}
 
-	nw.addr, err = caddy.ParseNetworkAddress(address)
+	nw.addr, err = kengine.ParseNetworkAddress(address)
 	if err != nil {
 		return fmt.Errorf("parsing network address '%s': %v", address, err)
 	}
@@ -110,13 +110,13 @@ func (nw NetWriter) OpenWriter() (io.WriteCloser, error) {
 	return reconn, nil
 }
 
-// UnmarshalCaddyfile sets up the handler from Caddyfile tokens. Syntax:
+// UnmarshalKenginefile sets up the handler from Kenginefile tokens. Syntax:
 //
 //	net <address> {
 //	    dial_timeout <duration>
 //	    soft_start
 //	}
-func (nw *NetWriter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (nw *NetWriter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume writer name
 	if !d.NextArg() {
 		return d.ArgErr()
@@ -131,14 +131,14 @@ func (nw *NetWriter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 			if !d.NextArg() {
 				return d.ArgErr()
 			}
-			timeout, err := caddy.ParseDuration(d.Val())
+			timeout, err := kengine.ParseDuration(d.Val())
 			if err != nil {
 				return d.Errf("invalid duration: %s", d.Val())
 			}
 			if d.NextArg() {
 				return d.ArgErr()
 			}
-			nw.DialTimeout = caddy.Duration(timeout)
+			nw.DialTimeout = kengine.Duration(timeout)
 
 		case "soft_start":
 			if d.NextArg() {
@@ -217,7 +217,7 @@ func (reconn *redialerConn) dial() (net.Conn, error) {
 
 // Interface guards
 var (
-	_ caddy.Provisioner     = (*NetWriter)(nil)
-	_ caddy.WriterOpener    = (*NetWriter)(nil)
-	_ caddyfile.Unmarshaler = (*NetWriter)(nil)
+	_ kengine.Provisioner     = (*NetWriter)(nil)
+	_ kengine.WriterOpener    = (*NetWriter)(nil)
+	_ kenginefile.Unmarshaler = (*NetWriter)(nil)
 )

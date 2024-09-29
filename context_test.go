@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"encoding/json"
@@ -26,7 +26,7 @@ func ExampleContext_LoadModule() {
 	var ctx Context
 	myStruct := &struct {
 		// This godoc comment will appear in module documentation.
-		GuestModuleRaw json.RawMessage `json:"guest_module,omitempty" caddy:"namespace=example inline_key=name"`
+		GuestModuleRaw json.RawMessage `json:"guest_module,omitempty" kengine:"namespace=example inline_key=name"`
 
 		// this is where the decoded module will be stored; in this
 		// example, we pretend we need an io.Writer but it can be
@@ -58,7 +58,7 @@ func ExampleContext_LoadModule_array() {
 	var ctx Context
 	myStruct := &struct {
 		// This godoc comment will appear in module documentation.
-		GuestModulesRaw []json.RawMessage `json:"guest_modules,omitempty" caddy:"namespace=example inline_key=name"`
+		GuestModulesRaw []json.RawMessage `json:"guest_modules,omitempty" kengine:"namespace=example inline_key=name"`
 
 		// this is where the decoded module will be stored; in this
 		// example, we pretend we need an io.Writer but it can be
@@ -91,7 +91,7 @@ func ExampleContext_LoadModule_map() {
 	var ctx Context
 	myStruct := &struct {
 		// This godoc comment will appear in module documentation.
-		GuestModulesRaw ModuleMap `json:"guest_modules,omitempty" caddy:"namespace=example"`
+		GuestModulesRaw ModuleMap `json:"guest_modules,omitempty" kengine:"namespace=example"`
 
 		// this is where the decoded module will be stored; in this
 		// example, we pretend we need an io.Writer but it can be

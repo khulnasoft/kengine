@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddycmd
+package kenginecmd
 
 import (
 	"encoding/json"
@@ -30,17 +30,17 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/caddyserver/caddy/v2"
+	"github.com/khulnasoft/kengine/v2"
 )
 
 func cmdUpgrade(fl Flags) (int, error) {
 	_, nonstandard, _, err := getModules()
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("unable to enumerate installed plugins: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("unable to enumerate installed plugins: %v", err)
 	}
 	pluginPkgs, err := getPluginPackages(nonstandard)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	return upgradeBuild(pluginPkgs, fl)
@@ -48,20 +48,20 @@ func cmdUpgrade(fl Flags) (int, error) {
 
 func cmdAddPackage(fl Flags) (int, error) {
 	if len(fl.Args()) == 0 {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("at least one package name must be specified")
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("at least one package name must be specified")
 	}
 	_, nonstandard, _, err := getModules()
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("unable to enumerate installed plugins: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("unable to enumerate installed plugins: %v", err)
 	}
 	pluginPkgs, err := getPluginPackages(nonstandard)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	for _, arg := range fl.Args() {
 		if _, ok := pluginPkgs[arg]; ok {
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("package is already added")
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("package is already added")
 		}
 		pluginPkgs[arg] = struct{}{}
 	}
@@ -71,21 +71,21 @@ func cmdAddPackage(fl Flags) (int, error) {
 
 func cmdRemovePackage(fl Flags) (int, error) {
 	if len(fl.Args()) == 0 {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("at least one package name must be specified")
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("at least one package name must be specified")
 	}
 	_, nonstandard, _, err := getModules()
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("unable to enumerate installed plugins: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("unable to enumerate installed plugins: %v", err)
 	}
 	pluginPkgs, err := getPluginPackages(nonstandard)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	for _, arg := range fl.Args() {
 		if _, ok := pluginPkgs[arg]; !ok {
 			// package does not exist
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("package is not added")
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("package is not added")
 		}
 		delete(pluginPkgs, arg)
 	}
@@ -94,22 +94,22 @@ func cmdRemovePackage(fl Flags) (int, error) {
 }
 
 func upgradeBuild(pluginPkgs map[string]struct{}, fl Flags) (int, error) {
-	l := caddy.Log()
+	l := kengine.Log()
 
 	thisExecPath, err := os.Executable()
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("determining current executable path: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("determining current executable path: %v", err)
 	}
 	thisExecStat, err := os.Stat(thisExecPath)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("retrieving current executable permission bits: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("retrieving current executable permission bits: %v", err)
 	}
 	if thisExecStat.Mode()&os.ModeSymlink == os.ModeSymlink {
 		symSource := thisExecPath
 		// we are a symlink; resolve it
 		thisExecPath, err = filepath.EvalSymlinks(thisExecPath)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("resolving current executable symlink: %v", err)
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("resolving current executable symlink: %v", err)
 		}
 		l.Info("this executable is a symlink", zap.String("source", symSource), zap.String("target", thisExecPath))
 	}
@@ -127,7 +127,7 @@ func upgradeBuild(pluginPkgs map[string]struct{}, fl Flags) (int, error) {
 	// initiate the build
 	resp, err := downloadBuild(qs)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("download failed: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("download failed: %v", err)
 	}
 	defer resp.Body.Close()
 
@@ -138,7 +138,7 @@ func upgradeBuild(pluginPkgs map[string]struct{}, fl Flags) (int, error) {
 		zap.String("backup_path", backupExecPath))
 	err = os.Rename(thisExecPath, backupExecPath)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("backing up current binary: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("backing up current binary: %v", err)
 	}
 	defer func() {
 		if err != nil {
@@ -153,9 +153,9 @@ func upgradeBuild(pluginPkgs map[string]struct{}, fl Flags) (int, error) {
 	}()
 
 	// download the file; do this in a closure to close reliably before we execute it
-	err = writeCaddyBinary(thisExecPath, &resp.Body, thisExecStat)
+	err = writeKengineBinary(thisExecPath, &resp.Body, thisExecStat)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	l.Info("download successful; displaying new binary details", zap.String("location", thisExecPath))
@@ -163,26 +163,26 @@ func upgradeBuild(pluginPkgs map[string]struct{}, fl Flags) (int, error) {
 	// use the new binary to print out version and module info
 	fmt.Print("\nModule versions:\n\n")
 	if err = listModules(thisExecPath); err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("download succeeded, but unable to execute 'caddy list-modules': %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("download succeeded, but unable to execute 'kengine list-modules': %v", err)
 	}
 	fmt.Println("\nVersion:")
 	if err = showVersion(thisExecPath); err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("download succeeded, but unable to execute 'caddy version': %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("download succeeded, but unable to execute 'kengine version': %v", err)
 	}
 	fmt.Println()
 
 	// clean up the backup file
 	if !fl.Bool("keep-backup") {
-		if err = removeCaddyBinary(backupExecPath); err != nil {
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("download succeeded, but unable to clean up backup binary: %v", err)
+		if err = removeKengineBinary(backupExecPath); err != nil {
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("download succeeded, but unable to clean up backup binary: %v", err)
 		}
 	} else {
 		l.Info("skipped cleaning up the backup file", zap.String("backup_path", backupExecPath))
 	}
 
-	l.Info("upgrade successful; please restart any running Caddy instances", zap.String("executable", thisExecPath))
+	l.Info("upgrade successful; please restart any running Kengine instances", zap.String("executable", thisExecPath))
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func getModules() (standard, nonstandard, unknown []moduleInfo, err error) {
@@ -192,16 +192,16 @@ func getModules() (standard, nonstandard, unknown []moduleInfo, err error) {
 		return
 	}
 
-	for _, modID := range caddy.Modules() {
-		modInfo, err := caddy.GetModule(modID)
+	for _, modID := range kengine.Modules() {
+		modInfo, err := kengine.GetModule(modID)
 		if err != nil {
 			// that's weird, shouldn't happen
-			unknown = append(unknown, moduleInfo{caddyModuleID: modID, err: err})
+			unknown = append(unknown, moduleInfo{kengineModuleID: modID, err: err})
 			continue
 		}
 
-		// to get the Caddy plugin's version info, we need to know
-		// the package that the Caddy module's value comes from; we
+		// to get the Kengine plugin's version info, we need to know
+		// the package that the Kengine module's value comes from; we
 		// can use reflection but we need a non-pointer value (I'm
 		// not sure why), and since New() should return a pointer
 		// value, we need to dereference it first
@@ -211,8 +211,8 @@ func getModules() (standard, nonstandard, unknown []moduleInfo, err error) {
 		}
 		modPkgPath := reflect.TypeOf(iface).PkgPath()
 
-		// now we find the Go module that the Caddy module's package
-		// belongs to; we assume the Caddy module package path will
+		// now we find the Go module that the Kengine module's package
+		// belongs to; we assume the Kengine module package path will
 		// be prefixed by its Go module path, and we will choose the
 		// longest matching prefix in case there are nested modules
 		var matched *debug.Module
@@ -224,12 +224,12 @@ func getModules() (standard, nonstandard, unknown []moduleInfo, err error) {
 			}
 		}
 
-		caddyModGoMod := moduleInfo{caddyModuleID: modID, goModule: matched}
+		kengineModGoMod := moduleInfo{kengineModuleID: modID, goModule: matched}
 
-		if strings.HasPrefix(modPkgPath, caddy.ImportPath) {
-			standard = append(standard, caddyModGoMod)
+		if strings.HasPrefix(modPkgPath, kengine.ImportPath) {
+			standard = append(standard, kengineModGoMod)
 		} else {
-			nonstandard = append(nonstandard, caddyModGoMod)
+			nonstandard = append(nonstandard, kengineModGoMod)
 		}
 	}
 	return
@@ -250,7 +250,7 @@ func showVersion(path string) error {
 }
 
 func downloadBuild(qs url.Values) (*http.Response, error) {
-	l := caddy.Log()
+	l := kengine.Log()
 	l.Info("requesting build",
 		zap.String("os", qs.Get("os")),
 		zap.String("arch", qs.Get("arch")),
@@ -288,8 +288,8 @@ func getPluginPackages(modules []moduleInfo) (map[string]struct{}, error) {
 	return pluginPkgs, nil
 }
 
-func writeCaddyBinary(path string, body *io.ReadCloser, fileInfo os.FileInfo) error {
-	l := caddy.Log()
+func writeKengineBinary(path string, body *io.ReadCloser, fileInfo os.FileInfo) error {
+	l := kengine.Log()
 	destFile, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, fileInfo.Mode())
 	if err != nil {
 		return fmt.Errorf("unable to open destination file: %v", err)
@@ -311,4 +311,4 @@ func writeCaddyBinary(path string, body *io.ReadCloser, fileInfo os.FileInfo) er
 	return nil
 }
 
-const downloadPath = "https://caddyserver.com/api/download"
+const downloadPath = "https://khulnasoft.com/api/download"

@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 //go:build !unix || solaris
 
-package caddy
+package kengine
 
 import (
 	"context"
@@ -254,7 +254,7 @@ func (spc *sharedPacketConn) Unwrap() net.PacketConn {
 	return spc.PacketConn
 }
 
-// Interface guards (see https://github.com/caddyserver/caddy/issues/3998)
+// Interface guards (see https://github.com/khulnasoft/kengine/issues/3998)
 var (
 	_ (interface {
 		Unwrap() net.PacketConn

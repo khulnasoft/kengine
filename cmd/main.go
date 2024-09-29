@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddycmd
+package kenginecmd
 
 import (
 	"bufio"
@@ -33,43 +33,43 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caddyserver/certmagic"
+	"github.com/khulnasoft-lab/certmagic"
 	"github.com/spf13/pflag"
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig"
 )
 
 func init() {
 	// set a fitting User-Agent for ACME requests
-	version, _ := caddy.Version()
+	version, _ := kengine.Version()
 	cleanModVersion := strings.TrimPrefix(version, "v")
-	ua := "Caddy/" + cleanModVersion
+	ua := "Kengine/" + cleanModVersion
 	if uaEnv, ok := os.LookupEnv("USERAGENT"); ok {
 		ua = uaEnv + " " + ua
 	}
 	certmagic.UserAgent = ua
 
-	// by using Caddy, user indicates agreement to CA terms
-	// (very important, as Caddy is often non-interactive
+	// by using Kengine, user indicates agreement to CA terms
+	// (very important, as Kengine is often non-interactive
 	// and thus ACME account creation will fail!)
 	certmagic.DefaultACME.Agreed = true
 }
 
-// Main implements the main function of the caddy command.
-// Call this if Caddy is to be the main() of your program.
+// Main implements the main function of the kengine command.
+// Call this if Kengine is to be the main() of your program.
 func Main() {
 	if len(os.Args) == 0 {
 		fmt.Printf("[FATAL] no arguments provided by OS; args[0] must be command\n")
-		os.Exit(caddy.ExitCodeFailedStartup)
+		os.Exit(kengine.ExitCodeFailedStartup)
 	}
 
 	undo, err := maxprocs.Set()
 	defer undo()
 	if err != nil {
-		caddy.Log().Warn("failed to set GOMAXPROCS", zap.Error(err))
+		kengine.Log().Warn("failed to set GOMAXPROCS", zap.Error(err))
 	}
 
 	if err := defaultFactory.Build().Execute(); err != nil {
@@ -104,40 +104,40 @@ func handlePingbackConn(conn net.Conn, expect []byte) error {
 // and returns the resulting JSON config bytes along with
 // the name of the loaded config file (if any).
 func LoadConfig(configFile, adapterName string) ([]byte, string, error) {
-	return loadConfigWithLogger(caddy.Log(), configFile, adapterName)
+	return loadConfigWithLogger(kengine.Log(), configFile, adapterName)
 }
 
-func isCaddyfile(configFile, adapterName string) (bool, error) {
-	if adapterName == "caddyfile" {
+func isKenginefile(configFile, adapterName string) (bool, error) {
+	if adapterName == "kenginefile" {
 		return true, nil
 	}
 
-	// as a special case, if a config file starts with "caddyfile" or
-	// has a ".caddyfile" extension, and no adapter is specified, and
+	// as a special case, if a config file starts with "kenginefile" or
+	// has a ".kenginefile" extension, and no adapter is specified, and
 	// no adapter module name matches the extension, assume
-	// caddyfile adapter for convenience
+	// kenginefile adapter for convenience
 	baseConfig := strings.ToLower(filepath.Base(configFile))
 	baseConfigExt := filepath.Ext(baseConfig)
-	startsOrEndsInCaddyfile := strings.HasPrefix(baseConfig, "caddyfile") || strings.HasSuffix(baseConfig, ".caddyfile")
+	startsOrEndsInKenginefile := strings.HasPrefix(baseConfig, "kenginefile") || strings.HasSuffix(baseConfig, ".kenginefile")
 
 	if baseConfigExt == ".json" {
 		return false, nil
 	}
 
 	// If the adapter is not specified,
-	// the config file starts with "caddyfile",
+	// the config file starts with "kenginefile",
 	// the config file has an extension,
-	// and isn't a JSON file (e.g. Caddyfile.yaml),
+	// and isn't a JSON file (e.g. Kenginefile.yaml),
 	// then we don't know what the config format is.
-	if adapterName == "" && startsOrEndsInCaddyfile {
+	if adapterName == "" && startsOrEndsInKenginefile {
 		return true, nil
 	}
 
 	// adapter is not empty,
-	// adapter is not "caddyfile",
+	// adapter is not "kenginefile",
 	// extension is not ".json",
-	// extension is not ".caddyfile"
-	// file does not start with "Caddyfile"
+	// extension is not ".kenginefile"
+	// file does not start with "Kenginefile"
 	return false, nil
 }
 
@@ -155,7 +155,7 @@ func loadConfigWithLogger(logger *zap.Logger, configFile, adapterName string) ([
 
 	// load initial config and adapter
 	var config []byte
-	var cfgAdapter caddyconfig.Adapter
+	var cfgAdapter kengineconfig.Adapter
 	var err error
 	if configFile != "" {
 		if configFile == "-" {
@@ -172,34 +172,34 @@ func loadConfigWithLogger(logger *zap.Logger, configFile, adapterName string) ([
 			logger.Info("using config from file", zap.String("file", configFile))
 		}
 	} else if adapterName == "" {
-		// if the Caddyfile adapter is plugged in, we can try using an
-		// adjacent Caddyfile by default
-		cfgAdapter = caddyconfig.GetAdapter("caddyfile")
+		// if the Kenginefile adapter is plugged in, we can try using an
+		// adjacent Kenginefile by default
+		cfgAdapter = kengineconfig.GetAdapter("kenginefile")
 		if cfgAdapter != nil {
-			config, err = os.ReadFile("Caddyfile")
+			config, err = os.ReadFile("Kenginefile")
 			if errors.Is(err, fs.ErrNotExist) {
-				// okay, no default Caddyfile; pretend like this never happened
+				// okay, no default Kenginefile; pretend like this never happened
 				cfgAdapter = nil
 			} else if err != nil {
-				// default Caddyfile exists, but error reading it
-				return nil, "", fmt.Errorf("reading default Caddyfile: %v", err)
+				// default Kenginefile exists, but error reading it
+				return nil, "", fmt.Errorf("reading default Kenginefile: %v", err)
 			} else {
-				// success reading default Caddyfile
-				configFile = "Caddyfile"
-				logger.Info("using adjacent Caddyfile")
+				// success reading default Kenginefile
+				configFile = "Kenginefile"
+				logger.Info("using adjacent Kenginefile")
 			}
 		}
 	}
 
-	if yes, err := isCaddyfile(configFile, adapterName); yes {
-		adapterName = "caddyfile"
+	if yes, err := isKenginefile(configFile, adapterName); yes {
+		adapterName = "kenginefile"
 	} else if err != nil {
 		return nil, "", err
 	}
 
 	// load config adapter
 	if adapterName != "" {
-		cfgAdapter = caddyconfig.GetAdapter(adapterName)
+		cfgAdapter = kengineconfig.GetAdapter(adapterName)
 		if cfgAdapter == nil {
 			return nil, "", fmt.Errorf("unrecognized config adapter: %s", adapterName)
 		}
@@ -253,7 +253,7 @@ func watchConfigFile(filename, adapterName string) {
 	// make our logger; since config reloads can change the
 	// default logger, we need to get it dynamically each time
 	logger := func() *zap.Logger {
-		return caddy.Log().
+		return kengine.Log().
 			Named("watcher").
 			With(zap.String("config_file", filename))
 	}
@@ -287,7 +287,7 @@ func watchConfigFile(filename, adapterName string) {
 		lastCfg = newCfg
 
 		// apply the updated config
-		err = caddy.Load(lastCfg, false)
+		err = kengine.Load(lastCfg, false)
 		if err != nil {
 			logger().Error("applying latest config", zap.Error(err))
 			continue
@@ -340,7 +340,7 @@ func (f Flags) Float64(name string) float64 {
 // is not a duration type. It panics if the flag is
 // not in the flag set.
 func (f Flags) Duration(name string) time.Duration {
-	val, _ := caddy.ParseDuration(f.String(name))
+	val, _ := kengine.ParseDuration(f.String(name))
 	return val
 }
 
@@ -368,8 +368,8 @@ func loadEnvFromFile(envFile string) error {
 
 	// Update the storage paths to ensure they have the proper
 	// value after loading a specified env file.
-	caddy.ConfigAutosavePath = filepath.Join(caddy.AppConfigDir(), "autosave.json")
-	caddy.DefaultStorage = &certmagic.FileStorage{Path: caddy.AppDataDir()}
+	kengine.ConfigAutosavePath = filepath.Join(kengine.AppConfigDir(), "autosave.json")
+	kengine.DefaultStorage = &certmagic.FileStorage{Path: kengine.AppDataDir()}
 
 	return nil
 }
@@ -445,12 +445,12 @@ func parseEnvFile(envInput io.Reader) (map[string]string, error) {
 }
 
 func printEnvironment() {
-	_, version := caddy.Version()
-	fmt.Printf("caddy.HomeDir=%s\n", caddy.HomeDir())
-	fmt.Printf("caddy.AppDataDir=%s\n", caddy.AppDataDir())
-	fmt.Printf("caddy.AppConfigDir=%s\n", caddy.AppConfigDir())
-	fmt.Printf("caddy.ConfigAutosavePath=%s\n", caddy.ConfigAutosavePath)
-	fmt.Printf("caddy.Version=%s\n", version)
+	_, version := kengine.Version()
+	fmt.Printf("kengine.HomeDir=%s\n", kengine.HomeDir())
+	fmt.Printf("kengine.AppDataDir=%s\n", kengine.AppDataDir())
+	fmt.Printf("kengine.AppConfigDir=%s\n", kengine.AppConfigDir())
+	fmt.Printf("kengine.ConfigAutosavePath=%s\n", kengine.ConfigAutosavePath)
+	fmt.Printf("kengine.Version=%s\n", version)
 	fmt.Printf("runtime.GOOS=%s\n", runtime.GOOS)
 	fmt.Printf("runtime.GOARCH=%s\n", runtime.GOARCH)
 	fmt.Printf("runtime.Compiler=%s\n", runtime.Compiler)

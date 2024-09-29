@@ -1,4 +1,4 @@
-package caddy
+package kengine
 
 import (
 	"net/http"
@@ -7,14 +7,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
-	"github.com/caddyserver/caddy/v2/internal/metrics"
+	"github.com/khulnasoft/kengine/v2/internal/metrics"
 )
 
 // define and register the metrics used in this package.
 func init() {
 	prometheus.MustRegister(collectors.NewBuildInfoCollector())
 
-	const ns, sub = "caddy", "admin"
+	const ns, sub = "kengine", "admin"
 
 	adminMetrics.requestCount = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: ns,

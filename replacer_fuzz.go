@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 //go:build gofuzz
 
-package caddy
+package kengine
 
 func FuzzReplacer(data []byte) (score int) {
 	NewReplacer().ReplaceAll(string(data), "")

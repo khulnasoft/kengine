@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import (
 	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
 func init() {
-	caddy.RegisterModule(ConsoleEncoder{})
-	caddy.RegisterModule(JSONEncoder{})
+	kengine.RegisterModule(ConsoleEncoder{})
+	kengine.RegisterModule(JSONEncoder{})
 }
 
 // ConsoleEncoder encodes log entries that are mostly human-readable.
@@ -36,16 +36,16 @@ type ConsoleEncoder struct {
 	LogEncoderConfig
 }
 
-// CaddyModule returns the Caddy module information.
-func (ConsoleEncoder) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.console",
-		New: func() caddy.Module { return new(ConsoleEncoder) },
+// KengineModule returns the Kengine module information.
+func (ConsoleEncoder) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.console",
+		New: func() kengine.Module { return new(ConsoleEncoder) },
 	}
 }
 
 // Provision sets up the encoder.
-func (ce *ConsoleEncoder) Provision(_ caddy.Context) error {
+func (ce *ConsoleEncoder) Provision(_ kengine.Context) error {
 	if ce.LevelFormat == "" {
 		ce.LevelFormat = "color"
 	}
@@ -56,7 +56,7 @@ func (ce *ConsoleEncoder) Provision(_ caddy.Context) error {
 	return nil
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens. Syntax:
+// UnmarshalKenginefile sets up the module from Kenginefile tokens. Syntax:
 //
 //	console {
 //	    <common encoder config subdirectives...>
@@ -64,12 +64,12 @@ func (ce *ConsoleEncoder) Provision(_ caddy.Context) error {
 //
 // See the godoc on the LogEncoderConfig type for the syntax of
 // subdirectives that are common to most/all encoders.
-func (ce *ConsoleEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (ce *ConsoleEncoder) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume encoder name
 	if d.NextArg() {
 		return d.ArgErr()
 	}
-	err := ce.LogEncoderConfig.UnmarshalCaddyfile(d)
+	err := ce.LogEncoderConfig.UnmarshalKenginefile(d)
 	if err != nil {
 		return err
 	}
@@ -82,21 +82,21 @@ type JSONEncoder struct {
 	LogEncoderConfig
 }
 
-// CaddyModule returns the Caddy module information.
-func (JSONEncoder) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.json",
-		New: func() caddy.Module { return new(JSONEncoder) },
+// KengineModule returns the Kengine module information.
+func (JSONEncoder) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.json",
+		New: func() kengine.Module { return new(JSONEncoder) },
 	}
 }
 
 // Provision sets up the encoder.
-func (je *JSONEncoder) Provision(_ caddy.Context) error {
+func (je *JSONEncoder) Provision(_ kengine.Context) error {
 	je.Encoder = zapcore.NewJSONEncoder(je.ZapcoreEncoderConfig())
 	return nil
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens. Syntax:
+// UnmarshalKenginefile sets up the module from Kenginefile tokens. Syntax:
 //
 //	json {
 //	    <common encoder config subdirectives...>
@@ -104,12 +104,12 @@ func (je *JSONEncoder) Provision(_ caddy.Context) error {
 //
 // See the godoc on the LogEncoderConfig type for the syntax of
 // subdirectives that are common to most/all encoders.
-func (je *JSONEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (je *JSONEncoder) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume encoder name
 	if d.NextArg() {
 		return d.ArgErr()
 	}
-	err := je.LogEncoderConfig.UnmarshalCaddyfile(d)
+	err := je.LogEncoderConfig.UnmarshalKenginefile(d)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ type LogEncoderConfig struct {
 	LevelFormat string `json:"level_format,omitempty"`
 }
 
-// UnmarshalCaddyfile populates the struct from Caddyfile tokens. Syntax:
+// UnmarshalKenginefile populates the struct from Kenginefile tokens. Syntax:
 //
 //	{
 //	    message_key     <key>
@@ -155,7 +155,7 @@ type LogEncoderConfig struct {
 //	    duration_format <format>
 //	    level_format    <format>
 //	}
-func (lec *LogEncoderConfig) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (lec *LogEncoderConfig) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	for d.NextBlock(0) {
 		subdir := d.Val()
 		switch subdir {
@@ -304,6 +304,6 @@ var (
 	_ zapcore.Encoder = (*ConsoleEncoder)(nil)
 	_ zapcore.Encoder = (*JSONEncoder)(nil)
 
-	_ caddyfile.Unmarshaler = (*ConsoleEncoder)(nil)
-	_ caddyfile.Unmarshaler = (*JSONEncoder)(nil)
+	_ kenginefile.Unmarshaler = (*ConsoleEncoder)(nil)
+	_ kenginefile.Unmarshaler = (*JSONEncoder)(nil)
 )

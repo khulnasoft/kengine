@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"context"
@@ -22,18 +22,18 @@ import (
 	"log/slog"
 	"reflect"
 
-	"github.com/caddyserver/certmagic"
+	"github.com/khulnasoft-lab/certmagic"
 	"go.uber.org/zap"
 	"go.uber.org/zap/exp/zapslog"
 
-	"github.com/caddyserver/caddy/v2/internal/filesystems"
+	"github.com/khulnasoft/kengine/v2/internal/filesystems"
 )
 
 // Context is a type which defines the lifetime of modules that
 // are loaded and provides access to the parent configuration
 // that spawned the modules which are loaded. It should be used
 // with care and wrapped with derivation functions from the
-// standard context package only if you don't need the Caddy
+// standard context package only if you don't need the Kengine
 // specific features. These contexts are canceled when the
 // lifetime of the modules loaded from it is over.
 //
@@ -106,7 +106,7 @@ func (ctx *Context) OnExit(f func(context.Context)) {
 	ctx.exitFuncs = append(ctx.exitFuncs, f)
 }
 
-// LoadModule loads the Caddy module(s) from the specified field of the parent struct
+// LoadModule loads the Kengine module(s) from the specified field of the parent struct
 // pointer and returns the loaded module(s). The struct pointer and its field name as
 // a string are necessary so that reflection can be used to read the struct tag on the
 // field to get the module namespace and inline module name key (if specified).
@@ -122,17 +122,17 @@ func (ctx *Context) OnExit(f func(context.Context)) {
 //	map[string]json.RawMessage   => map[string]any
 //	[]map[string]json.RawMessage => []map[string]any
 //
-// The field must have a "caddy" struct tag in this format:
+// The field must have a "kengine" struct tag in this format:
 //
-//	caddy:"key1=val1 key2=val2"
+//	kengine:"key1=val1 key2=val2"
 //
 // To load modules, a "namespace" key is required. For example, to load modules
 // in the "http.handlers" namespace, you'd put: `namespace=http.handlers` in the
-// Caddy struct tag.
+// Kengine struct tag.
 //
 // The module name must also be available. If the field type is a map or slice of maps,
 // then key is assumed to be the module name if an "inline_key" is NOT specified in the
-// caddy struct tag. In this case, the module name does NOT need to be specified in-line
+// kengine struct tag. In this case, the module name does NOT need to be specified in-line
 // with the module itself.
 //
 // If not a map, or if inline_key is non-empty, then the module name must be embedded
@@ -141,7 +141,7 @@ func (ctx *Context) OnExit(f func(context.Context)) {
 // meaning the key containing the module's name that is defined inline with the module
 // itself. You must specify the inline key in a struct tag, along with the namespace:
 //
-//	caddy:"namespace=http.handlers inline_key=handler"
+//	kengine:"namespace=http.handlers inline_key=handler"
 //
 // This will look for a key/value pair like `"handler": "..."` in the json.RawMessage
 // in order to know the module name.
@@ -163,7 +163,7 @@ func (ctx Context) LoadModule(structPointer any, fieldName string) (any, error) 
 		panic(fmt.Sprintf("field %s does not exist in %#v", fieldName, structPointer))
 	}
 
-	opts, err := ParseStructTag(field.Tag.Get("caddy"))
+	opts, err := ParseStructTag(field.Tag.Get("kengine"))
 	if err != nil {
 		panic(fmt.Sprintf("malformed tag on field %s: %v", fieldName, err))
 	}
@@ -476,7 +476,7 @@ func (ctx Context) AppIfConfigured(name string) (any, error) {
 // ErrNotConfigured indicates a module is not configured.
 var ErrNotConfigured = fmt.Errorf("module not configured")
 
-// Storage returns the configured Caddy storage implementation.
+// Storage returns the configured Kengine storage implementation.
 func (ctx Context) Storage() certmagic.Storage {
 	return ctx.cfg.storage
 }
@@ -487,7 +487,7 @@ func (ctx Context) Storage() certmagic.Storage {
 // different module; it panics if more than 1 value is passed in.
 //
 // Originally, this method's signature was `Logger(mod Module)`,
-// requiring that an instance of a Caddy module be passed in.
+// requiring that an instance of a Kengine module be passed in.
 // However, that is no longer necessary, as the closest module
 // most recently associated with the context will be automatically
 // assumed. To prevent a sudden breaking change, this method's
@@ -539,7 +539,7 @@ func (ctx Context) Slogger() *slog.Logger {
 	return slog.New(zapslog.NewHandler(
 		ctx.cfg.Logging.Logger(mod).Core(),
 		&zapslog.HandlerOptions{
-			LoggerName: string(mod.CaddyModule().ID),
+			LoggerName: string(mod.KengineModule().ID),
 		},
 	))
 }

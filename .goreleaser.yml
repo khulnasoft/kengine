@@ -2,41 +2,41 @@ version: 2
 
 before:
   hooks:
-    # The build is done in this particular way to build Caddy in a designated directory named in .gitignore.
-    # This is so we can run goreleaser on tag without Git complaining of being dirty. The main.go in cmd/caddy directory 
+    # The build is done in this particular way to build Kengine in a designated directory named in .gitignore.
+    # This is so we can run goreleaser on tag without Git complaining of being dirty. The main.go in cmd/kengine directory 
     # cannot be built within that directory due to changes necessary for the build causing Git to be dirty, which
     # subsequently causes gorleaser to refuse running.
-    - rm -rf caddy-build caddy-dist vendor
-    # vendor Caddy deps
+    - rm -rf kengine-build kengine-dist vendor
+    # vendor Kengine deps
     - go mod vendor
-    - mkdir -p caddy-build
-    - cp cmd/caddy/main.go caddy-build/main.go
-    - /bin/sh -c 'cd ./caddy-build && go mod init caddy'
+    - mkdir -p kengine-build
+    - cp cmd/kengine/main.go kengine-build/main.go
+    - /bin/sh -c 'cd ./kengine-build && go mod init kengine'
     # prepare syso files for windows embedding
-    - go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
-    - /bin/sh -c 'for a in amd64 arm arm64; do XCADDY_SKIP_BUILD=1 GOOS=windows GOARCH=$a $GOPATH/bin/xcaddy build {{.Env.TAG}}; done'
-    - /bin/sh -c 'mv /tmp/buildenv_*/*.syso caddy-build'
+    - go install github.com/khulnasoft/xkengine/cmd/xkengine@latest
+    - /bin/sh -c 'for a in amd64 arm arm64; do XKENGINE_SKIP_BUILD=1 GOOS=windows GOARCH=$a $GOPATH/bin/xkengine build {{.Env.TAG}}; done'
+    - /bin/sh -c 'mv /tmp/buildenv_*/*.syso kengine-build'
     # GoReleaser doesn't seem to offer {{.Tag}} at this stage, so we have to embed it into the env
     # so we run: TAG=$(git describe --abbrev=0) goreleaser release --rm-dist --skip-publish --skip-validate
-    - go mod edit -require=github.com/caddyserver/caddy/v2@{{.Env.TAG}} ./caddy-build/go.mod
+    - go mod edit -require=github.com/khulnasoft/kengine/v2@{{.Env.TAG}} ./kengine-build/go.mod
     # as of Go 1.16, `go` commands no longer automatically change go.{mod,sum}. We now have to explicitly
     # run `go mod tidy`. The `/bin/sh -c '...'` is because goreleaser can't find cd in PATH without shell invocation.
-    - /bin/sh -c 'cd ./caddy-build && go mod tidy'
+    - /bin/sh -c 'cd ./kengine-build && go mod tidy'
     # vendor the deps of the prepared to-build module
-    - /bin/sh -c 'cd ./caddy-build && go mod vendor'
-    - git clone --depth 1 https://github.com/caddyserver/dist caddy-dist
-    - mkdir -p caddy-dist/man
+    - /bin/sh -c 'cd ./kengine-build && go mod vendor'
+    - git clone --depth 1 https://github.com/khulnasoft/dist kengine-dist
+    - mkdir -p kengine-dist/man
     - go mod download
-    - go run cmd/caddy/main.go manpage --directory ./caddy-dist/man
-    - gzip -r ./caddy-dist/man/
-    - /bin/sh -c 'go run cmd/caddy/main.go completion bash > ./caddy-dist/scripts/bash-completion'
+    - go run cmd/kengine/main.go manpage --directory ./kengine-dist/man
+    - gzip -r ./kengine-dist/man/
+    - /bin/sh -c 'go run cmd/kengine/main.go completion bash > ./kengine-dist/scripts/bash-completion'
 
 builds:
 - env:
   - CGO_ENABLED=0
   - GO111MODULE=on
-  dir: ./caddy-build
-  binary: caddy
+  dir: ./kengine-build
+  binary: kengine
   goos:
   - darwin
   - linux
@@ -120,7 +120,7 @@ archives:
       {{- with .Mips }}_{{ . }}{{ end }}
       {{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}
   
-  # package the 'caddy-build' directory into a tarball,
+  # package the 'kengine-build' directory into a tarball,
   # allowing users to build the exact same set of files as ours.
   - id: source
     meta: true
@@ -132,7 +132,7 @@ archives:
         dst: ./README.md
       - src: AUTHORS
         dst: ./AUTHORS
-      - src: ./caddy-build
+      - src: ./kengine-build
         dst: ./
 
 source:
@@ -152,13 +152,13 @@ checksum:
 
 nfpms:
   - id: default
-    package_name: caddy
+    package_name: kengine
 
     vendor: Dyanim
-    homepage: https://caddyserver.com
+    homepage: https://khulnasoft.com
     maintainer: Matthew Holt <mholt@users.noreply.github.com>
     description: |
-      Caddy - Powerful, enterprise-ready, open source web server with automatic HTTPS written in Go
+      Kengine - Powerful, enterprise-ready, open source web server with automatic HTTPS written in Go
     license: Apache 2.0
 
     formats:
@@ -167,34 +167,34 @@ nfpms:
 
     bindir: /usr/bin
     contents:
-      - src: ./caddy-dist/init/caddy.service
-        dst: /lib/systemd/system/caddy.service
+      - src: ./kengine-dist/init/kengine.service
+        dst: /lib/systemd/system/kengine.service
         
-      - src: ./caddy-dist/init/caddy-api.service
-        dst: /lib/systemd/system/caddy-api.service
+      - src: ./kengine-dist/init/kengine-api.service
+        dst: /lib/systemd/system/kengine-api.service
       
-      - src: ./caddy-dist/welcome/index.html
-        dst: /usr/share/caddy/index.html
+      - src: ./kengine-dist/welcome/index.html
+        dst: /usr/share/kengine/index.html
       
-      - src: ./caddy-dist/scripts/bash-completion
-        dst: /etc/bash_completion.d/caddy
+      - src: ./kengine-dist/scripts/bash-completion
+        dst: /etc/bash_completion.d/kengine
     
-      - src: ./caddy-dist/config/Caddyfile
-        dst: /etc/caddy/Caddyfile
+      - src: ./kengine-dist/config/Kenginefile
+        dst: /etc/kengine/Kenginefile
         type: config
 
-      - src: ./caddy-dist/man/*
+      - src: ./kengine-dist/man/*
         dst: /usr/share/man/man8/
 
     scripts:
-      postinstall: ./caddy-dist/scripts/postinstall.sh
-      preremove: ./caddy-dist/scripts/preremove.sh
-      postremove: ./caddy-dist/scripts/postremove.sh
+      postinstall: ./kengine-dist/scripts/postinstall.sh
+      preremove: ./kengine-dist/scripts/preremove.sh
+      postremove: ./kengine-dist/scripts/postremove.sh
 
 release:
   github:
-    owner: caddyserver
-    name: caddy
+    owner: khulnasoft
+    name: kengine
   draft: true
   prerelease: auto
 

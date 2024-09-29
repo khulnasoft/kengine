@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,20 +27,20 @@ import (
 
 	"go.uber.org/zap/zapcore"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
-	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
 )
 
 func init() {
-	caddy.RegisterModule(DeleteFilter{})
-	caddy.RegisterModule(HashFilter{})
-	caddy.RegisterModule(ReplaceFilter{})
-	caddy.RegisterModule(IPMaskFilter{})
-	caddy.RegisterModule(QueryFilter{})
-	caddy.RegisterModule(CookieFilter{})
-	caddy.RegisterModule(RegexpFilter{})
-	caddy.RegisterModule(RenameFilter{})
+	kengine.RegisterModule(DeleteFilter{})
+	kengine.RegisterModule(HashFilter{})
+	kengine.RegisterModule(ReplaceFilter{})
+	kengine.RegisterModule(IPMaskFilter{})
+	kengine.RegisterModule(QueryFilter{})
+	kengine.RegisterModule(CookieFilter{})
+	kengine.RegisterModule(RegexpFilter{})
+	kengine.RegisterModule(RenameFilter{})
 }
 
 // LogFieldFilter can filter (or manipulate)
@@ -49,20 +49,20 @@ type LogFieldFilter interface {
 	Filter(zapcore.Field) zapcore.Field
 }
 
-// DeleteFilter is a Caddy log field filter that
+// DeleteFilter is a Kengine log field filter that
 // deletes the field.
 type DeleteFilter struct{}
 
-// CaddyModule returns the Caddy module information.
-func (DeleteFilter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter.delete",
-		New: func() caddy.Module { return new(DeleteFilter) },
+// KengineModule returns the Kengine module information.
+func (DeleteFilter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter.delete",
+		New: func() kengine.Module { return new(DeleteFilter) },
 	}
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens.
-func (DeleteFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the module from Kenginefile tokens.
+func (DeleteFilter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	return nil
 }
 
@@ -77,30 +77,30 @@ func hash(s string) string {
 	return fmt.Sprintf("%.4x", sha256.Sum256([]byte(s)))
 }
 
-// HashFilter is a Caddy log field filter that
+// HashFilter is a Kengine log field filter that
 // replaces the field with the initial 4 bytes
 // of the SHA-256 hash of the content. Operates
 // on string fields, or on arrays of strings
 // where each string is hashed.
 type HashFilter struct{}
 
-// CaddyModule returns the Caddy module information.
-func (HashFilter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter.hash",
-		New: func() caddy.Module { return new(HashFilter) },
+// KengineModule returns the Kengine module information.
+func (HashFilter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter.hash",
+		New: func() kengine.Module { return new(HashFilter) },
 	}
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens.
-func (f *HashFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the module from Kenginefile tokens.
+func (f *HashFilter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	return nil
 }
 
 // Filter filters the input field with the replacement value.
 func (f *HashFilter) Filter(in zapcore.Field) zapcore.Field {
-	if array, ok := in.Interface.(caddyhttp.LoggableStringArray); ok {
-		newArray := make(caddyhttp.LoggableStringArray, len(array))
+	if array, ok := in.Interface.(kenginehttp.LoggableStringArray); ok {
+		newArray := make(kenginehttp.LoggableStringArray, len(array))
 		for i, s := range array {
 			newArray[i] = hash(s)
 		}
@@ -112,22 +112,22 @@ func (f *HashFilter) Filter(in zapcore.Field) zapcore.Field {
 	return in
 }
 
-// ReplaceFilter is a Caddy log field filter that
+// ReplaceFilter is a Kengine log field filter that
 // replaces the field with the indicated string.
 type ReplaceFilter struct {
 	Value string `json:"value,omitempty"`
 }
 
-// CaddyModule returns the Caddy module information.
-func (ReplaceFilter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter.replace",
-		New: func() caddy.Module { return new(ReplaceFilter) },
+// KengineModule returns the Kengine module information.
+func (ReplaceFilter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter.replace",
+		New: func() kengine.Module { return new(ReplaceFilter) },
 	}
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens.
-func (f *ReplaceFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the module from Kenginefile tokens.
+func (f *ReplaceFilter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume filter name
 	if d.NextArg() {
 		f.Value = d.Val()
@@ -142,7 +142,7 @@ func (f *ReplaceFilter) Filter(in zapcore.Field) zapcore.Field {
 	return in
 }
 
-// IPMaskFilter is a Caddy log field filter that
+// IPMaskFilter is a Kengine log field filter that
 // masks IP addresses in a string, or in an array
 // of strings. The string may be a comma separated
 // list of IP addresses, where all of the values
@@ -158,16 +158,16 @@ type IPMaskFilter struct {
 	v6Mask net.IPMask
 }
 
-// CaddyModule returns the Caddy module information.
-func (IPMaskFilter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter.ip_mask",
-		New: func() caddy.Module { return new(IPMaskFilter) },
+// KengineModule returns the Kengine module information.
+func (IPMaskFilter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter.ip_mask",
+		New: func() kengine.Module { return new(IPMaskFilter) },
 	}
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens.
-func (m *IPMaskFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the module from Kenginefile tokens.
+func (m *IPMaskFilter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume filter name
 
 	args := d.RemainingArgs()
@@ -220,7 +220,7 @@ func (m *IPMaskFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 }
 
 // Provision parses m's IP masks, from integers.
-func (m *IPMaskFilter) Provision(ctx caddy.Context) error {
+func (m *IPMaskFilter) Provision(ctx kengine.Context) error {
 	parseRawToMask := func(rawField int, bitLen int) net.IPMask {
 		if rawField == 0 {
 			return nil
@@ -240,8 +240,8 @@ func (m *IPMaskFilter) Provision(ctx caddy.Context) error {
 
 // Filter filters the input field.
 func (m IPMaskFilter) Filter(in zapcore.Field) zapcore.Field {
-	if array, ok := in.Interface.(caddyhttp.LoggableStringArray); ok {
-		newArray := make(caddyhttp.LoggableStringArray, len(array))
+	if array, ok := in.Interface.(kenginehttp.LoggableStringArray); ok {
+		newArray := make(kenginehttp.LoggableStringArray, len(array))
 		for i, s := range array {
 			newArray[i] = m.mask(s)
 		}
@@ -314,7 +314,7 @@ type queryFilterAction struct {
 	Value string `json:"value,omitempty"`
 }
 
-// QueryFilter is a Caddy log field filter that filters
+// QueryFilter is a Kengine log field filter that filters
 // query parameters from a URL.
 //
 // This filter updates the logged URL string to remove, replace or hash
@@ -337,16 +337,16 @@ func (f *QueryFilter) Validate() error {
 	return nil
 }
 
-// CaddyModule returns the Caddy module information.
-func (QueryFilter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter.query",
-		New: func() caddy.Module { return new(QueryFilter) },
+// KengineModule returns the Kengine module information.
+func (QueryFilter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter.query",
+		New: func() kengine.Module { return new(QueryFilter) },
 	}
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens.
-func (m *QueryFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the module from Kenginefile tokens.
+func (m *QueryFilter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume filter name
 	for d.NextBlock(0) {
 		qfa := queryFilterAction{}
@@ -391,8 +391,8 @@ func (m *QueryFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 // Filter filters the input field.
 func (m QueryFilter) Filter(in zapcore.Field) zapcore.Field {
-	if array, ok := in.Interface.(caddyhttp.LoggableStringArray); ok {
-		newArray := make(caddyhttp.LoggableStringArray, len(array))
+	if array, ok := in.Interface.(kenginehttp.LoggableStringArray); ok {
+		newArray := make(kenginehttp.LoggableStringArray, len(array))
 		for i, s := range array {
 			newArray[i] = m.processQueryString(s)
 		}
@@ -443,7 +443,7 @@ type cookieFilterAction struct {
 	Value string `json:"value,omitempty"`
 }
 
-// CookieFilter is a Caddy log field filter that filters
+// CookieFilter is a Kengine log field filter that filters
 // cookies.
 //
 // This filter updates the logged HTTP header string
@@ -468,16 +468,16 @@ func (f *CookieFilter) Validate() error {
 	return nil
 }
 
-// CaddyModule returns the Caddy module information.
-func (CookieFilter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter.cookie",
-		New: func() caddy.Module { return new(CookieFilter) },
+// KengineModule returns the Kengine module information.
+func (CookieFilter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter.cookie",
+		New: func() kengine.Module { return new(CookieFilter) },
 	}
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens.
-func (m *CookieFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the module from Kenginefile tokens.
+func (m *CookieFilter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume filter name
 	for d.NextBlock(0) {
 		cfa := cookieFilterAction{}
@@ -522,7 +522,7 @@ func (m *CookieFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 // Filter filters the input field.
 func (m CookieFilter) Filter(in zapcore.Field) zapcore.Field {
-	cookiesSlice, ok := in.Interface.(caddyhttp.LoggableStringArray)
+	cookiesSlice, ok := in.Interface.(kenginehttp.LoggableStringArray)
 	if !ok {
 		return in
 	}
@@ -558,12 +558,12 @@ OUTER:
 		transformedRequest.AddCookie(c)
 	}
 
-	in.Interface = caddyhttp.LoggableStringArray(transformedRequest.Header["Cookie"])
+	in.Interface = kenginehttp.LoggableStringArray(transformedRequest.Header["Cookie"])
 
 	return in
 }
 
-// RegexpFilter is a Caddy log field filter that
+// RegexpFilter is a Kengine log field filter that
 // replaces the field matching the provided regexp
 // with the indicated string. If the field is an
 // array of strings, each of them will have the
@@ -578,16 +578,16 @@ type RegexpFilter struct {
 	regexp *regexp.Regexp
 }
 
-// CaddyModule returns the Caddy module information.
-func (RegexpFilter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter.regexp",
-		New: func() caddy.Module { return new(RegexpFilter) },
+// KengineModule returns the Kengine module information.
+func (RegexpFilter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter.regexp",
+		New: func() kengine.Module { return new(RegexpFilter) },
 	}
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens.
-func (f *RegexpFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the module from Kenginefile tokens.
+func (f *RegexpFilter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume filter name
 	if d.NextArg() {
 		f.RawRegexp = d.Val()
@@ -599,7 +599,7 @@ func (f *RegexpFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 }
 
 // Provision compiles m's regexp.
-func (m *RegexpFilter) Provision(ctx caddy.Context) error {
+func (m *RegexpFilter) Provision(ctx kengine.Context) error {
 	r, err := regexp.Compile(m.RawRegexp)
 	if err != nil {
 		return err
@@ -612,8 +612,8 @@ func (m *RegexpFilter) Provision(ctx caddy.Context) error {
 
 // Filter filters the input field with the replacement value if it matches the regexp.
 func (f *RegexpFilter) Filter(in zapcore.Field) zapcore.Field {
-	if array, ok := in.Interface.(caddyhttp.LoggableStringArray); ok {
-		newArray := make(caddyhttp.LoggableStringArray, len(array))
+	if array, ok := in.Interface.(kenginehttp.LoggableStringArray); ok {
+		newArray := make(kenginehttp.LoggableStringArray, len(array))
 		for i, s := range array {
 			newArray[i] = f.regexp.ReplaceAllString(s, f.Value)
 		}
@@ -625,22 +625,22 @@ func (f *RegexpFilter) Filter(in zapcore.Field) zapcore.Field {
 	return in
 }
 
-// RenameFilter is a Caddy log field filter that
+// RenameFilter is a Kengine log field filter that
 // renames the field's key with the indicated name.
 type RenameFilter struct {
 	Name string `json:"name,omitempty"`
 }
 
-// CaddyModule returns the Caddy module information.
-func (RenameFilter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter.rename",
-		New: func() caddy.Module { return new(RenameFilter) },
+// KengineModule returns the Kengine module information.
+func (RenameFilter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter.rename",
+		New: func() kengine.Module { return new(RenameFilter) },
 	}
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens.
-func (f *RenameFilter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+// UnmarshalKenginefile sets up the module from Kenginefile tokens.
+func (f *RenameFilter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume filter name
 	if d.NextArg() {
 		f.Name = d.Val()
@@ -665,17 +665,17 @@ var (
 	_ LogFieldFilter = (*RegexpFilter)(nil)
 	_ LogFieldFilter = (*RenameFilter)(nil)
 
-	_ caddyfile.Unmarshaler = (*DeleteFilter)(nil)
-	_ caddyfile.Unmarshaler = (*HashFilter)(nil)
-	_ caddyfile.Unmarshaler = (*ReplaceFilter)(nil)
-	_ caddyfile.Unmarshaler = (*IPMaskFilter)(nil)
-	_ caddyfile.Unmarshaler = (*QueryFilter)(nil)
-	_ caddyfile.Unmarshaler = (*CookieFilter)(nil)
-	_ caddyfile.Unmarshaler = (*RegexpFilter)(nil)
-	_ caddyfile.Unmarshaler = (*RenameFilter)(nil)
+	_ kenginefile.Unmarshaler = (*DeleteFilter)(nil)
+	_ kenginefile.Unmarshaler = (*HashFilter)(nil)
+	_ kenginefile.Unmarshaler = (*ReplaceFilter)(nil)
+	_ kenginefile.Unmarshaler = (*IPMaskFilter)(nil)
+	_ kenginefile.Unmarshaler = (*QueryFilter)(nil)
+	_ kenginefile.Unmarshaler = (*CookieFilter)(nil)
+	_ kenginefile.Unmarshaler = (*RegexpFilter)(nil)
+	_ kenginefile.Unmarshaler = (*RenameFilter)(nil)
 
-	_ caddy.Provisioner = (*IPMaskFilter)(nil)
-	_ caddy.Provisioner = (*RegexpFilter)(nil)
+	_ kengine.Provisioner = (*IPMaskFilter)(nil)
+	_ kengine.Provisioner = (*RegexpFilter)(nil)
 
-	_ caddy.Validator = (*QueryFilter)(nil)
+	_ kengine.Validator = (*QueryFilter)(nil)
 )

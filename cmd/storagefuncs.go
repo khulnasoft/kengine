@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddycmd
+package kenginecmd
 
 import (
 	"archive/tar"
@@ -23,13 +23,13 @@ import (
 	"io"
 	"os"
 
-	"github.com/caddyserver/certmagic"
+	"github.com/khulnasoft-lab/certmagic"
 
-	"github.com/caddyserver/caddy/v2"
+	"github.com/khulnasoft/kengine/v2"
 )
 
 type storVal struct {
-	StorageRaw json.RawMessage `json:"storage,omitempty" caddy:"namespace=caddy.storage inline_key=module"`
+	StorageRaw json.RawMessage `json:"storage,omitempty" kengine:"namespace=kengine.storage inline_key=module"`
 }
 
 // determineStorage returns the top-level storage module from the given config.
@@ -65,33 +65,33 @@ func cmdImportStorage(fl Flags) (int, error) {
 	importStorageCmdImportFile := fl.String("input")
 
 	if importStorageCmdConfigFlag == "" {
-		return caddy.ExitCodeFailedStartup, errors.New("--config is required")
+		return kengine.ExitCodeFailedStartup, errors.New("--config is required")
 	}
 	if importStorageCmdImportFile == "" {
-		return caddy.ExitCodeFailedStartup, errors.New("--input is required")
+		return kengine.ExitCodeFailedStartup, errors.New("--input is required")
 	}
 
 	// extract storage from config if possible
 	storageCfg, err := determineStorage(importStorageCmdConfigFlag, "")
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	// load specified storage or fallback to default
 	var stor certmagic.Storage
-	ctx, cancel := caddy.NewContext(caddy.Context{Context: context.Background()})
+	ctx, cancel := kengine.NewContext(kengine.Context{Context: context.Background()})
 	defer cancel()
 	if storageCfg != nil && storageCfg.StorageRaw != nil {
 		val, err := ctx.LoadModule(storageCfg, "StorageRaw")
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, err
+			return kengine.ExitCodeFailedStartup, err
 		}
-		stor, err = val.(caddy.StorageConverter).CertMagicStorage()
+		stor, err = val.(kengine.StorageConverter).CertMagicStorage()
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, err
+			return kengine.ExitCodeFailedStartup, err
 		}
 	} else {
-		stor = caddy.DefaultStorage
+		stor = kengine.DefaultStorage
 	}
 
 	// setup input
@@ -101,7 +101,7 @@ func cmdImportStorage(fl Flags) (int, error) {
 	} else {
 		f, err = os.Open(importStorageCmdImportFile)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("opening input file: %v", err)
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("opening input file: %v", err)
 		}
 		defer f.Close()
 	}
@@ -114,22 +114,22 @@ func cmdImportStorage(fl Flags) (int, error) {
 			break
 		}
 		if err != nil {
-			return caddy.ExitCodeFailedQuit, fmt.Errorf("reading archive: %v", err)
+			return kengine.ExitCodeFailedQuit, fmt.Errorf("reading archive: %v", err)
 		}
 
 		b, err := io.ReadAll(tr)
 		if err != nil {
-			return caddy.ExitCodeFailedQuit, fmt.Errorf("reading archive: %v", err)
+			return kengine.ExitCodeFailedQuit, fmt.Errorf("reading archive: %v", err)
 		}
 
 		err = stor.Store(ctx, hdr.Name, b)
 		if err != nil {
-			return caddy.ExitCodeFailedQuit, fmt.Errorf("reading archive: %v", err)
+			return kengine.ExitCodeFailedQuit, fmt.Errorf("reading archive: %v", err)
 		}
 	}
 
 	fmt.Println("Successfully imported storage")
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdExportStorage(fl Flags) (int, error) {
@@ -137,39 +137,39 @@ func cmdExportStorage(fl Flags) (int, error) {
 	exportStorageCmdOutputFlag := fl.String("output")
 
 	if exportStorageCmdConfigFlag == "" {
-		return caddy.ExitCodeFailedStartup, errors.New("--config is required")
+		return kengine.ExitCodeFailedStartup, errors.New("--config is required")
 	}
 	if exportStorageCmdOutputFlag == "" {
-		return caddy.ExitCodeFailedStartup, errors.New("--output is required")
+		return kengine.ExitCodeFailedStartup, errors.New("--output is required")
 	}
 
 	// extract storage from config if possible
 	storageCfg, err := determineStorage(exportStorageCmdConfigFlag, "")
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	// load specified storage or fallback to default
 	var stor certmagic.Storage
-	ctx, cancel := caddy.NewContext(caddy.Context{Context: context.Background()})
+	ctx, cancel := kengine.NewContext(kengine.Context{Context: context.Background()})
 	defer cancel()
 	if storageCfg != nil && storageCfg.StorageRaw != nil {
 		val, err := ctx.LoadModule(storageCfg, "StorageRaw")
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, err
+			return kengine.ExitCodeFailedStartup, err
 		}
-		stor, err = val.(caddy.StorageConverter).CertMagicStorage()
+		stor, err = val.(kengine.StorageConverter).CertMagicStorage()
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, err
+			return kengine.ExitCodeFailedStartup, err
 		}
 	} else {
-		stor = caddy.DefaultStorage
+		stor = kengine.DefaultStorage
 	}
 
 	// enumerate all keys
 	keys, err := stor.List(ctx, "", true)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	// setup output
@@ -179,7 +179,7 @@ func cmdExportStorage(fl Flags) (int, error) {
 	} else {
 		f, err = os.Create(exportStorageCmdOutputFlag)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("opening output file: %v", err)
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("opening output file: %v", err)
 		}
 		defer f.Close()
 	}
@@ -190,13 +190,13 @@ func cmdExportStorage(fl Flags) (int, error) {
 	for _, k := range keys {
 		info, err := stor.Stat(ctx, k)
 		if err != nil {
-			return caddy.ExitCodeFailedQuit, err
+			return kengine.ExitCodeFailedQuit, err
 		}
 
 		if info.IsTerminal {
 			v, err := stor.Load(ctx, k)
 			if err != nil {
-				return caddy.ExitCodeFailedQuit, err
+				return kengine.ExitCodeFailedQuit, err
 			}
 
 			hdr := &tar.Header{
@@ -207,16 +207,16 @@ func cmdExportStorage(fl Flags) (int, error) {
 			}
 
 			if err = tw.WriteHeader(hdr); err != nil {
-				return caddy.ExitCodeFailedQuit, fmt.Errorf("writing archive: %v", err)
+				return kengine.ExitCodeFailedQuit, fmt.Errorf("writing archive: %v", err)
 			}
 			if _, err = tw.Write(v); err != nil {
-				return caddy.ExitCodeFailedQuit, fmt.Errorf("writing archive: %v", err)
+				return kengine.ExitCodeFailedQuit, fmt.Errorf("writing archive: %v", err)
 			}
 		}
 	}
 	if err = tw.Close(); err != nil {
-		return caddy.ExitCodeFailedQuit, fmt.Errorf("writing archive: %v", err)
+		return kengine.ExitCodeFailedQuit, fmt.Errorf("writing archive: %v", err)
 	}
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }

@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ import (
 	"sync"
 )
 
-// Module is a type that is used as a Caddy module. In
+// Module is a type that is used as a Kengine module. In
 // addition to this interface, most modules will implement
 // some interface expected by their host module in order
 // to be useful. To learn which interface(s) to implement,
@@ -46,18 +46,18 @@ import (
 // 5) The module will probably be type-asserted from
 // 'any' to some other, more useful interface expected
 // by the host module. For example, HTTP handler modules are
-// type-asserted as caddyhttp.MiddlewareHandler values.
+// type-asserted as kenginehttp.MiddlewareHandler values.
 // 6) When a module's containing Context is canceled, if it is
 // a CleanerUpper, its Cleanup() method is called.
 type Module interface {
-	// This method indicates that the type is a Caddy
+	// This method indicates that the type is a Kengine
 	// module. The returned ModuleInfo must have both
 	// a name and a constructor function. This method
 	// must not have any side-effects.
-	CaddyModule() ModuleInfo
+	KengineModule() ModuleInfo
 }
 
-// ModuleInfo represents a registered Caddy module.
+// ModuleInfo represents a registered Kengine module.
 type ModuleInfo struct {
 	// ID is the "full name" of the module. It
 	// must be unique and properly namespaced.
@@ -74,7 +74,7 @@ type ModuleInfo struct {
 	New func() Module
 }
 
-// ModuleID is a string that uniquely identifies a Caddy module. A
+// ModuleID is a string that uniquely identifies a Kengine module. A
 // module ID is lightly structured. It consists of dot-separated
 // labels which form a simple hierarchy from left to right. The last
 // label is the module name, and the labels before that constitute
@@ -83,7 +83,7 @@ type ModuleInfo struct {
 // Thus, a module ID has the form: <namespace>.<name>
 //
 // An ID with no dot has the empty namespace, which is appropriate
-// for app modules (these are "top-level" modules that Caddy core
+// for app modules (these are "top-level" modules that Kengine core
 // loads and runs).
 //
 // Module IDs should be lowercase and use underscores (_) instead of
@@ -92,7 +92,7 @@ type ModuleInfo struct {
 // Examples of valid IDs:
 // - http
 // - http.handlers.file_server
-// - caddy.logging.encoders.json
+// - kengine.logging.encoders.json
 type ModuleID string
 
 // Namespace returns the namespace (or scope) portion of a module ID,
@@ -134,12 +134,12 @@ type ModuleMap map[string]json.RawMessage
 // incomplete or invalid, or if the module is already
 // registered.
 func RegisterModule(instance Module) {
-	mod := instance.CaddyModule()
+	mod := instance.KengineModule()
 
 	if mod.ID == "" {
 		panic("module ID missing")
 	}
-	if mod.ID == "caddy" || mod.ID == "admin" {
+	if mod.ID == "kengine" || mod.ID == "admin" {
 		panic(fmt.Sprintf("module ID '%s' is reserved", mod.ID))
 	}
 	if mod.New == nil {
@@ -175,7 +175,7 @@ func GetModule(name string) (ModuleInfo, error) {
 func GetModuleName(instance any) string {
 	var name string
 	if mod, ok := instance.(Module); ok {
-		name = mod.CaddyModule().ID.Name()
+		name = mod.KengineModule().ID.Name()
 	}
 	return name
 }
@@ -185,7 +185,7 @@ func GetModuleName(instance any) string {
 func GetModuleID(instance any) string {
 	var id string
 	if mod, ok := instance.(Module); ok {
-		id = string(mod.CaddyModule().ID)
+		id = string(mod.KengineModule().ID)
 	}
 	return id
 }
@@ -314,9 +314,9 @@ type CleanerUpper interface {
 	Cleanup() error
 }
 
-// ParseStructTag parses a caddy struct tag into its keys and values.
+// ParseStructTag parses a kengine struct tag into its keys and values.
 // It is very simple. The expected syntax is:
-// `caddy:"key1=val1 key2=val2 ..."`
+// `kengine:"key1=val1 key2=val2 ..."`
 func ParseStructTag(tag string) (map[string]string, error) {
 	results := make(map[string]string)
 	pairs := strings.Split(tag, " ")

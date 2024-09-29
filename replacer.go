@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"bytes"
@@ -392,7 +392,7 @@ func (f globalDefaultReplacementProvider) replace(key string) (any, bool) {
 	case "time.now.http":
 		// According to the comment for http.TimeFormat, the timezone must be in UTC
 		// to generate the correct format.
-		// https://github.com/caddyserver/caddy/issues/5773
+		// https://github.com/khulnasoft/kengine/issues/5773
 		return nowFunc().UTC().Format(http.TimeFormat), true
 	case "time.now.common_log":
 		return nowFunc().Format("02/Jan/2006:15:04:05 -0700"), true

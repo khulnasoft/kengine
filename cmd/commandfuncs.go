@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddycmd
+package kenginecmd
 
 import (
 	"bytes"
@@ -35,10 +35,10 @@ import (
 	"github.com/aryann/difflib"
 	"go.uber.org/zap"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
-	"github.com/caddyserver/caddy/v2/internal"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/v2/internal"
 )
 
 func cmdStart(fl Flags) (int, error) {
@@ -51,7 +51,7 @@ func cmdStart(fl Flags) (int, error) {
 	var envfileFlag []string
 	envfileFlag, err = fl.GetStringSlice("envfile")
 	if err != nil {
-		return caddy.ExitCodeFailedStartup,
+		return kengine.ExitCodeFailedStartup,
 			fmt.Errorf("reading envfile flag: %v", err)
 	}
 
@@ -59,7 +59,7 @@ func cmdStart(fl Flags) (int, error) {
 	// it is ready to confirm that it has successfully started
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		return caddy.ExitCodeFailedStartup,
+		return kengine.ExitCodeFailedStartup,
 			fmt.Errorf("opening listener for success confirmation: %v", err)
 	}
 	defer ln.Close()
@@ -74,7 +74,7 @@ func cmdStart(fl Flags) (int, error) {
 	// sure by giving it some random bytes and having it echo
 	// them back to us)
 	cmd := exec.Command(os.Args[0], "run", "--pingback", ln.Addr().String())
-	// we should be able to run caddy in relative paths
+	// we should be able to run kengine in relative paths
 	if errors.Is(cmd.Err, exec.ErrDot) {
 		cmd.Err = nil
 	}
@@ -96,7 +96,7 @@ func cmdStart(fl Flags) (int, error) {
 	}
 	stdinPipe, err := cmd.StdinPipe()
 	if err != nil {
-		return caddy.ExitCodeFailedStartup,
+		return kengine.ExitCodeFailedStartup,
 			fmt.Errorf("creating stdin pipe: %v", err)
 	}
 	cmd.Stdout = os.Stdout
@@ -106,7 +106,7 @@ func cmdStart(fl Flags) (int, error) {
 	expect := make([]byte, 32)
 	_, err = rand.Read(expect)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup,
+		return kengine.ExitCodeFailedStartup,
 			fmt.Errorf("generating random confirmation bytes: %v", err)
 	}
 
@@ -122,8 +122,8 @@ func cmdStart(fl Flags) (int, error) {
 	// start the process
 	err = cmd.Start()
 	if err != nil {
-		return caddy.ExitCodeFailedStartup,
-			fmt.Errorf("starting caddy process: %v", err)
+		return kengine.ExitCodeFailedStartup,
+			fmt.Errorf("starting kengine process: %v", err)
 	}
 
 	// there are two ways we know we're done: either
@@ -159,17 +159,17 @@ func cmdStart(fl Flags) (int, error) {
 	// when one of the goroutines unblocks, we're done and can exit
 	select {
 	case <-success:
-		fmt.Printf("Successfully started Caddy (pid=%d) - Caddy is running in the background\n", cmd.Process.Pid)
+		fmt.Printf("Successfully started Kengine (pid=%d) - Kengine is running in the background\n", cmd.Process.Pid)
 	case err := <-exit:
-		return caddy.ExitCodeFailedStartup,
-			fmt.Errorf("caddy process exited with error: %v", err)
+		return kengine.ExitCodeFailedStartup,
+			fmt.Errorf("kengine process exited with error: %v", err)
 	}
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdRun(fl Flags) (int, error) {
-	caddy.TrapSignals()
+	kengine.TrapSignals()
 
 	configFlag := fl.String("config")
 	configAdapterFlag := fl.String("adapter")
@@ -182,7 +182,7 @@ func cmdRun(fl Flags) (int, error) {
 	// load all additional envs as soon as possible
 	err := handleEnvFileFlag(fl)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	// if we are supposed to print the environment, do that first
@@ -193,22 +193,22 @@ func cmdRun(fl Flags) (int, error) {
 	// load the config, depending on flags
 	var config []byte
 	if resumeFlag {
-		config, err = os.ReadFile(caddy.ConfigAutosavePath)
+		config, err = os.ReadFile(kengine.ConfigAutosavePath)
 		if errors.Is(err, fs.ErrNotExist) {
 			// not a bad error; just can't resume if autosave file doesn't exist
-			caddy.Log().Info("no autosave file exists", zap.String("autosave_file", caddy.ConfigAutosavePath))
+			kengine.Log().Info("no autosave file exists", zap.String("autosave_file", kengine.ConfigAutosavePath))
 			resumeFlag = false
 		} else if err != nil {
-			return caddy.ExitCodeFailedStartup, err
+			return kengine.ExitCodeFailedStartup, err
 		} else {
 			if configFlag == "" {
-				caddy.Log().Info("resuming from last configuration",
-					zap.String("autosave_file", caddy.ConfigAutosavePath))
+				kengine.Log().Info("resuming from last configuration",
+					zap.String("autosave_file", kengine.ConfigAutosavePath))
 			} else {
 				// if they also specified a config file, user should be aware that we're not
 				// using it (doing so could lead to data/config loss by overwriting!)
-				caddy.Log().Warn("--config and --resume flags were used together; ignoring --config and resuming from last configuration",
-					zap.String("autosave_file", caddy.ConfigAutosavePath))
+				kengine.Log().Warn("--config and --resume flags were used together; ignoring --config and resuming from last configuration",
+					zap.String("autosave_file", kengine.ConfigAutosavePath))
 			}
 		}
 	}
@@ -217,44 +217,44 @@ func cmdRun(fl Flags) (int, error) {
 	if !resumeFlag {
 		config, configFile, err = LoadConfig(configFlag, configAdapterFlag)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, err
+			return kengine.ExitCodeFailedStartup, err
 		}
 	}
 
 	// create pidfile now, in case loading config takes a while (issue #5477)
 	if pidfileFlag != "" {
-		err := caddy.PIDFile(pidfileFlag)
+		err := kengine.PIDFile(pidfileFlag)
 		if err != nil {
-			caddy.Log().Error("unable to write PID file",
+			kengine.Log().Error("unable to write PID file",
 				zap.String("pidfile", pidfileFlag),
 				zap.Error(err))
 		}
 	}
 
 	// run the initial config
-	err = caddy.Load(config, true)
+	err = kengine.Load(config, true)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("loading initial config: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("loading initial config: %v", err)
 	}
-	caddy.Log().Info("serving initial configuration")
+	kengine.Log().Info("serving initial configuration")
 
 	// if we are to report to another process the successful start
 	// of the server, do so now by echoing back contents of stdin
 	if pingbackFlag != "" {
 		confirmationBytes, err := io.ReadAll(os.Stdin)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup,
+			return kengine.ExitCodeFailedStartup,
 				fmt.Errorf("reading confirmation bytes from stdin: %v", err)
 		}
 		conn, err := net.Dial("tcp", pingbackFlag)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup,
+			return kengine.ExitCodeFailedStartup,
 				fmt.Errorf("dialing confirmation address: %v", err)
 		}
 		defer conn.Close()
 		_, err = conn.Write(confirmationBytes)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup,
+			return kengine.ExitCodeFailedStartup,
 				fmt.Errorf("writing confirmation bytes to %s: %v", pingbackFlag, err)
 		}
 	}
@@ -272,15 +272,15 @@ func cmdRun(fl Flags) (int, error) {
 	switch runtime.GOOS {
 	case "windows":
 		if os.Getenv("HOME") == "" && os.Getenv("USERPROFILE") == "" && !hasXDG {
-			caddy.Log().Warn("neither HOME nor USERPROFILE environment variables are set - please fix; some assets might be stored in ./caddy")
+			kengine.Log().Warn("neither HOME nor USERPROFILE environment variables are set - please fix; some assets might be stored in ./kengine")
 		}
 	case "plan9":
 		if os.Getenv("home") == "" && !hasXDG {
-			caddy.Log().Warn("$home environment variable is empty - please fix; some assets might be stored in ./caddy")
+			kengine.Log().Warn("$home environment variable is empty - please fix; some assets might be stored in ./kengine")
 		}
 	default:
 		if os.Getenv("HOME") == "" && !hasXDG {
-			caddy.Log().Warn("$HOME environment variable is empty - please fix; some assets might be stored in ./caddy")
+			kengine.Log().Warn("$HOME environment variable is empty - please fix; some assets might be stored in ./kengine")
 		}
 	}
 
@@ -294,17 +294,17 @@ func cmdStop(fl Flags) (int, error) {
 
 	adminAddr, err := DetermineAdminAPIAddress(addressFlag, nil, configFlag, configAdapterFlag)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("couldn't determine admin API address: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("couldn't determine admin API address: %v", err)
 	}
 
 	resp, err := AdminAPIRequest(adminAddr, http.MethodPost, "/stop", nil, nil)
 	if err != nil {
-		caddy.Log().Warn("failed using API to stop instance", zap.Error(err))
-		return caddy.ExitCodeFailedStartup, err
+		kengine.Log().Warn("failed using API to stop instance", zap.Error(err))
+		return kengine.ExitCodeFailedStartup, err
 	}
 	defer resp.Body.Close()
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdReload(fl Flags) (int, error) {
@@ -313,18 +313,18 @@ func cmdReload(fl Flags) (int, error) {
 	addressFlag := fl.String("address")
 	forceFlag := fl.Bool("force")
 
-	// get the config in caddy's native format
+	// get the config in kengine's native format
 	config, configFile, err := LoadConfig(configFlag, configAdapterFlag)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 	if configFile == "" {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("no config file to load")
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("no config file to load")
 	}
 
 	adminAddr, err := DetermineAdminAPIAddress(addressFlag, config, configFlag, configAdapterFlag)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("couldn't determine admin API address: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("couldn't determine admin API address: %v", err)
 	}
 
 	// optionally force a config reload
@@ -335,26 +335,26 @@ func cmdReload(fl Flags) (int, error) {
 
 	resp, err := AdminAPIRequest(adminAddr, http.MethodPost, "/load", headers, bytes.NewReader(config))
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("sending configuration to instance: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("sending configuration to instance: %v", err)
 	}
 	defer resp.Body.Close()
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdVersion(_ Flags) (int, error) {
-	_, full := caddy.Version()
+	_, full := kengine.Version()
 	fmt.Println(full)
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdBuildInfo(_ Flags) (int, error) {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("no build information")
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("no build information")
 	}
 	fmt.Println(bi)
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdListModules(fl Flags) (int, error) {
@@ -363,7 +363,7 @@ func cmdListModules(fl Flags) (int, error) {
 	skipStandard := fl.Bool("skip-standard")
 
 	printModuleInfo := func(mi moduleInfo) {
-		fmt.Print(mi.caddyModuleID)
+		fmt.Print(mi.kengineModuleID)
 		if versions && mi.goModule != nil {
 			fmt.Print(" " + mi.goModule.Version)
 		}
@@ -383,13 +383,13 @@ func cmdListModules(fl Flags) (int, error) {
 	standard, nonstandard, unknown, err := getModules()
 	if err != nil {
 		// oh well, just print the module IDs and exit
-		for _, m := range caddy.Modules() {
+		for _, m := range kengine.Modules() {
 			fmt.Println(m)
 		}
-		return caddy.ExitCodeSuccess, nil
+		return kengine.ExitCodeSuccess, nil
 	}
 
-	// Standard modules (always shipped with Caddy)
+	// Standard modules (always shipped with Kengine)
 	if !skipStandard {
 		if len(standard) > 0 {
 			for _, mod := range standard {
@@ -410,7 +410,7 @@ func cmdListModules(fl Flags) (int, error) {
 	}
 	fmt.Printf("\n  Non-standard modules: %d\n", len(nonstandard))
 
-	// Unknown modules (couldn't get Caddy module info)
+	// Unknown modules (couldn't get Kengine module info)
 	if len(unknown) > 0 {
 		if (len(standard) > 0 && !skipStandard) || len(nonstandard) > 0 {
 			fmt.Println()
@@ -421,18 +421,18 @@ func cmdListModules(fl Flags) (int, error) {
 	}
 	fmt.Printf("\n  Unknown modules: %d\n", len(unknown))
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdEnviron(fl Flags) (int, error) {
 	// load all additional envs as soon as possible
 	err := handleEnvFileFlag(fl)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	printEnvironment()
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdAdaptConfig(fl Flags) (int, error) {
@@ -442,31 +442,31 @@ func cmdAdaptConfig(fl Flags) (int, error) {
 	validateFlag := fl.Bool("validate")
 
 	var err error
-	inputFlag, err = configFileWithRespectToDefault(caddy.Log(), inputFlag)
+	inputFlag, err = configFileWithRespectToDefault(kengine.Log(), inputFlag)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	// load all additional envs as soon as possible
 	err = handleEnvFileFlag(fl)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	if adapterFlag == "" {
-		return caddy.ExitCodeFailedStartup,
+		return kengine.ExitCodeFailedStartup,
 			fmt.Errorf("adapter name is required (use --adapt flag or leave unspecified for default)")
 	}
 
-	cfgAdapter := caddyconfig.GetAdapter(adapterFlag)
+	cfgAdapter := kengineconfig.GetAdapter(adapterFlag)
 	if cfgAdapter == nil {
-		return caddy.ExitCodeFailedStartup,
+		return kengine.ExitCodeFailedStartup,
 			fmt.Errorf("unrecognized config adapter: %s", adapterFlag)
 	}
 
 	input, err := os.ReadFile(inputFlag)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup,
+		return kengine.ExitCodeFailedStartup,
 			fmt.Errorf("reading input file: %v", err)
 	}
 
@@ -474,14 +474,14 @@ func cmdAdaptConfig(fl Flags) (int, error) {
 
 	adaptedConfig, warnings, err := cfgAdapter.Adapt(input, opts)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	if prettyFlag {
 		var prettyBuf bytes.Buffer
 		err = json.Indent(&prettyBuf, adaptedConfig, "", "\t")
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, err
+			return kengine.ExitCodeFailedStartup, err
 		}
 		adaptedConfig = prettyBuf.Bytes()
 	}
@@ -495,25 +495,25 @@ func cmdAdaptConfig(fl Flags) (int, error) {
 		if warn.Directive != "" {
 			msg = fmt.Sprintf("%s: %s", warn.Directive, warn.Message)
 		}
-		caddy.Log().Named(adapterFlag).Warn(msg,
+		kengine.Log().Named(adapterFlag).Warn(msg,
 			zap.String("file", warn.File),
 			zap.Int("line", warn.Line))
 	}
 
 	// validate output if requested
 	if validateFlag {
-		var cfg *caddy.Config
-		err = caddy.StrictUnmarshalJSON(adaptedConfig, &cfg)
+		var cfg *kengine.Config
+		err = kengine.StrictUnmarshalJSON(adaptedConfig, &cfg)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("decoding config: %v", err)
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("decoding config: %v", err)
 		}
-		err = caddy.Validate(cfg)
+		err = kengine.Validate(cfg)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("validation: %v", err)
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("validation: %v", err)
 		}
 	}
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdValidateConfig(fl Flags) (int, error) {
@@ -523,71 +523,71 @@ func cmdValidateConfig(fl Flags) (int, error) {
 	// load all additional envs as soon as possible
 	err := handleEnvFileFlag(fl)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	// use default config and ensure a config file is specified
-	configFlag, err = configFileWithRespectToDefault(caddy.Log(), configFlag)
+	configFlag, err = configFileWithRespectToDefault(kengine.Log(), configFlag)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 	if configFlag == "" {
-		return caddy.ExitCodeFailedStartup,
-			fmt.Errorf("input file required when there is no Caddyfile in current directory (use --config flag)")
+		return kengine.ExitCodeFailedStartup,
+			fmt.Errorf("input file required when there is no Kenginefile in current directory (use --config flag)")
 	}
 
 	input, _, err := LoadConfig(configFlag, adapterFlag)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
-	input = caddy.RemoveMetaFields(input)
+	input = kengine.RemoveMetaFields(input)
 
-	var cfg *caddy.Config
-	err = caddy.StrictUnmarshalJSON(input, &cfg)
+	var cfg *kengine.Config
+	err = kengine.StrictUnmarshalJSON(input, &cfg)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf("decoding config: %v", err)
+		return kengine.ExitCodeFailedStartup, fmt.Errorf("decoding config: %v", err)
 	}
 
-	err = caddy.Validate(cfg)
+	err = kengine.Validate(cfg)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup, err
+		return kengine.ExitCodeFailedStartup, err
 	}
 
 	fmt.Println("Valid configuration")
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 func cmdFmt(fl Flags) (int, error) {
 	configFile := fl.Arg(0)
 	if configFile == "" {
-		configFile = "Caddyfile"
+		configFile = "Kenginefile"
 	}
 
 	// as a special case, read from stdin if the file name is "-"
 	if configFile == "-" {
 		input, err := io.ReadAll(os.Stdin)
 		if err != nil {
-			return caddy.ExitCodeFailedStartup,
+			return kengine.ExitCodeFailedStartup,
 				fmt.Errorf("reading stdin: %v", err)
 		}
-		fmt.Print(string(caddyfile.Format(input)))
-		return caddy.ExitCodeSuccess, nil
+		fmt.Print(string(kenginefile.Format(input)))
+		return kengine.ExitCodeSuccess, nil
 	}
 
 	input, err := os.ReadFile(configFile)
 	if err != nil {
-		return caddy.ExitCodeFailedStartup,
+		return kengine.ExitCodeFailedStartup,
 			fmt.Errorf("reading input file: %v", err)
 	}
 
-	output := caddyfile.Format(input)
+	output := kenginefile.Format(input)
 
 	if fl.Bool("overwrite") {
 		if err := os.WriteFile(configFile, output, 0o600); err != nil {
-			return caddy.ExitCodeFailedStartup, fmt.Errorf("overwriting formatted file: %v", err)
+			return kengine.ExitCodeFailedStartup, fmt.Errorf("overwriting formatted file: %v", err)
 		}
-		return caddy.ExitCodeSuccess, nil
+		return kengine.ExitCodeSuccess, nil
 	}
 
 	if fl.Bool("diff") {
@@ -608,14 +608,14 @@ func cmdFmt(fl Flags) (int, error) {
 		fmt.Print(string(output))
 	}
 
-	if warning, diff := caddyfile.FormattingDifference(configFile, input); diff {
-		return caddy.ExitCodeFailedStartup, fmt.Errorf(`%s:%d: Caddyfile input is not formatted; Tip: use '--overwrite' to update your Caddyfile in-place instead of previewing it. Consult '--help' for more options`,
+	if warning, diff := kenginefile.FormattingDifference(configFile, input); diff {
+		return kengine.ExitCodeFailedStartup, fmt.Errorf(`%s:%d: Kenginefile input is not formatted; Tip: use '--overwrite' to update your Kenginefile in-place instead of previewing it. Consult '--help' for more options`,
 			warning.File,
 			warning.Line,
 		)
 	}
 
-	return caddy.ExitCodeSuccess, nil
+	return kengine.ExitCodeSuccess, nil
 }
 
 // handleEnvFileFlag loads the environment variables from the given --envfile
@@ -640,10 +640,10 @@ func handleEnvFileFlag(fl Flags) error {
 // AdminAPIRequest makes an API request according to the CLI flags given,
 // with the given HTTP method and request URI. If body is non-nil, it will
 // be assumed to be Content-Type application/json. The caller should close
-// the response body. Should only be used by Caddy CLI commands which
-// need to interact with a running instance of Caddy via the admin API.
+// the response body. Should only be used by Kengine CLI commands which
+// need to interact with a running instance of Kengine via the admin API.
 func AdminAPIRequest(adminAddr, method, uri string, headers http.Header, body io.Reader) (*http.Response, error) {
-	parsedAddr, err := caddy.ParseNetworkAddress(adminAddr)
+	parsedAddr, err := kengine.ParseNetworkAddress(adminAddr)
 	if err != nil || parsedAddr.PortRangeSize() > 1 {
 		return nil, fmt.Errorf("invalid admin address %s: %v", adminAddr, err)
 	}
@@ -718,7 +718,7 @@ func AdminAPIRequest(adminAddr, method, uri string, headers http.Header, body io
 		if err != nil {
 			return nil, fmt.Errorf("HTTP %d: reading error message: %v", resp.StatusCode, err)
 		}
-		return nil, fmt.Errorf("caddy responded with error: HTTP %d: %s", resp.StatusCode, respBody)
+		return nil, fmt.Errorf("kengine responded with error: HTTP %d: %s", resp.StatusCode, respBody)
 	}
 
 	return resp, nil
@@ -745,20 +745,20 @@ func DetermineAdminAPIAddress(address string, config []byte, configFile, configA
 		// otherwise, load it from the specified file/adapter
 		loadedConfig := config
 		if len(loadedConfig) == 0 {
-			// get the config in caddy's native format
+			// get the config in kengine's native format
 			loadedConfig, loadedConfigFile, err = LoadConfig(configFile, configAdapter)
 			if err != nil {
 				return "", err
 			}
 			if loadedConfigFile == "" {
-				return "", fmt.Errorf("no config file to load; either use --config flag or ensure Caddyfile exists in current directory")
+				return "", fmt.Errorf("no config file to load; either use --config flag or ensure Kenginefile exists in current directory")
 			}
 		}
 
 		// get the address of the admin listener from the config
 		if len(loadedConfig) > 0 {
 			var tmpStruct struct {
-				Admin caddy.AdminConfig `json:"admin"`
+				Admin kengine.AdminConfig `json:"admin"`
 			}
 			err := json.Unmarshal(loadedConfig, &tmpStruct)
 			if err != nil {
@@ -771,27 +771,27 @@ func DetermineAdminAPIAddress(address string, config []byte, configFile, configA
 	}
 
 	// Fallback to the default listen address otherwise
-	return caddy.DefaultAdminListen, nil
+	return kengine.DefaultAdminListen, nil
 }
 
 // configFileWithRespectToDefault returns the filename to use for loading the config, based
 // on whether a config file is already specified and a supported default config file exists.
 func configFileWithRespectToDefault(logger *zap.Logger, configFile string) (string, error) {
-	const defaultCaddyfile = "Caddyfile"
+	const defaultKenginefile = "Kenginefile"
 
-	// if no input file was specified, try a default Caddyfile if the Caddyfile adapter is plugged in
-	if configFile == "" && caddyconfig.GetAdapter("caddyfile") != nil {
-		_, err := os.Stat(defaultCaddyfile)
+	// if no input file was specified, try a default Kenginefile if the Kenginefile adapter is plugged in
+	if configFile == "" && kengineconfig.GetAdapter("kenginefile") != nil {
+		_, err := os.Stat(defaultKenginefile)
 		if err == nil {
-			// default Caddyfile exists
+			// default Kenginefile exists
 			if logger != nil {
-				logger.Info("using adjacent Caddyfile")
+				logger.Info("using adjacent Kenginefile")
 			}
-			return defaultCaddyfile, nil
+			return defaultKenginefile, nil
 		}
 		if !errors.Is(err, fs.ErrNotExist) {
 			// problem checking
-			return configFile, fmt.Errorf("checking if default Caddyfile exists: %v", err)
+			return configFile, fmt.Errorf("checking if default Kenginefile exists: %v", err)
 		}
 	}
 
@@ -800,7 +800,7 @@ func configFileWithRespectToDefault(logger *zap.Logger, configFile string) (stri
 }
 
 type moduleInfo struct {
-	caddyModuleID string
+	kengineModuleID string
 	goModule      *debug.Module
 	err           error
 }

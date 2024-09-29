@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddycmd
+package kenginecmd
 
 import (
 	"flag"
@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 
-	"github.com/caddyserver/caddy/v2"
+	"github.com/khulnasoft/kengine/v2"
 )
 
 // Command represents a subcommand. Name, Func,
@@ -39,7 +39,7 @@ type Command struct {
 	// the subcommand's flags and args. Use [] to indicate
 	// optional parameters and <> to enclose literal values
 	// intended to be replaced by the user. Do not prefix
-	// the string with "caddy" or the name of the command
+	// the string with "kengine" or the name of the command
 	// since these will be prepended for you; only include
 	// the actual parameters for this command.
 	Usage string
@@ -67,7 +67,7 @@ type Command struct {
 	// CobraFunc allows further configuration of the command
 	// via cobra's APIs. If this is set, then Func and Flags
 	// are ignored, with the assumption that they are set in
-	// this function. A caddycmd.WrapCommandFuncForCobra helper
+	// this function. A kenginecmd.WrapCommandFuncForCobra helper
 	// exists to simplify porting CommandFunc to Cobra's RunE.
 	CobraFunc func(*cobra.Command)
 }
@@ -89,17 +89,17 @@ func init() {
 	RegisterCommand(Command{
 		Name:  "start",
 		Usage: "[--config <path> [--adapter <name>]] [--envfile <path>] [--watch] [--pidfile <file>]",
-		Short: "Starts the Caddy process in the background and then returns",
+		Short: "Starts the Kengine process in the background and then returns",
 		Long: `
-Starts the Caddy process, optionally bootstrapped with an initial config file.
+Starts the Kengine process, optionally bootstrapped with an initial config file.
 This command unblocks after the server starts running or fails to run.
 
 If --envfile is specified, an environment file with environment variables
-in the KEY=VALUE format will be loaded into the Caddy process.
+in the KEY=VALUE format will be loaded into the Kengine process.
 
 On Windows, the spawned child process will remain attached to the terminal, so
-closing the window will forcefully stop Caddy; to avoid forgetting this, try
-using 'caddy run' instead to keep it in the foreground.
+closing the window will forcefully stop Kengine; to avoid forgetting this, try
+using 'kengine run' instead to keep it in the foreground.
 `,
 		CobraFunc: func(cmd *cobra.Command) {
 			cmd.Flags().StringP("config", "c", "", "Configuration file")
@@ -114,29 +114,29 @@ using 'caddy run' instead to keep it in the foreground.
 	RegisterCommand(Command{
 		Name:  "run",
 		Usage: "[--config <path> [--adapter <name>]] [--envfile <path>] [--environ] [--resume] [--watch] [--pidfile <file>]",
-		Short: `Starts the Caddy process and blocks indefinitely`,
+		Short: `Starts the Kengine process and blocks indefinitely`,
 		Long: `
-Starts the Caddy process, optionally bootstrapped with an initial config file,
-and blocks indefinitely until the server is stopped; i.e. runs Caddy in
+Starts the Kengine process, optionally bootstrapped with an initial config file,
+and blocks indefinitely until the server is stopped; i.e. runs Kengine in
 "daemon" mode (foreground).
 
 If a config file is specified, it will be applied immediately after the process
-is running. If the config file is not in Caddy's native JSON format, you can
+is running. If the config file is not in Kengine's native JSON format, you can
 specify an adapter with --adapter to adapt the given config file to
-Caddy's native format. The config adapter must be a registered module. Any
+Kengine's native format. The config adapter must be a registered module. Any
 warnings will be printed to the log, but beware that any adaptation without
 errors will immediately be used. If you want to review the results of the
 adaptation first, use the 'adapt' subcommand.
 
 As a special case, if the current working directory has a file called
-"Caddyfile" and the caddyfile config adapter is plugged in (default), then
-that file will be loaded and used to configure Caddy, even without any command
+"Kenginefile" and the kenginefile config adapter is plugged in (default), then
+that file will be loaded and used to configure Kengine, even without any command
 line flags.
 
 If --envfile is specified, an environment file with environment variables
-in the KEY=VALUE format will be loaded into the Caddy process.
+in the KEY=VALUE format will be loaded into the Kengine process.
 
-If --environ is specified, the environment as seen by the Caddy process will
+If --environ is specified, the environment as seen by the Kengine process will
 be printed before starting. This is the same as the environ command but does
 not quit after printing, and can be useful for troubleshooting.
 
@@ -163,9 +163,9 @@ option in a local development environment.
 	RegisterCommand(Command{
 		Name:  "stop",
 		Usage: "[--config <path> [--adapter <name>]] [--address <interface>]",
-		Short: "Gracefully stops a started Caddy process",
+		Short: "Gracefully stops a started Kengine process",
 		Long: `
-Stops the background Caddy process as gracefully as possible.
+Stops the background Kengine process as gracefully as possible.
 
 It requires that the admin API is enabled and accessible, since it will
 use the API's /stop endpoint. The address of this request can be customized
@@ -182,9 +182,9 @@ using the --address flag, or from the given --config, if not the default.
 	RegisterCommand(Command{
 		Name:  "reload",
 		Usage: "--config <path> [--adapter <name>] [--address <interface>]",
-		Short: "Changes the config of the running Caddy instance",
+		Short: "Changes the config of the running Kengine instance",
 		Long: `
-Gives the running Caddy instance a new configuration. This has the same effect
+Gives the running Kengine instance a new configuration. This has the same effect
 as POSTing a document to the /load API endpoint, but is convenient for simple
 workflows revolving around config files.
 
@@ -205,13 +205,13 @@ config file; otherwise the default is assumed.
 		Name:  "version",
 		Short: "Prints the version",
 		Long: `
-Prints the version of this Caddy binary.
+Prints the version of this Kengine binary.
 
 Version information must be embedded into the binary at compile-time in
-order for Caddy to display anything useful with this command. If Caddy
+order for Kengine to display anything useful with this command. If Kengine
 is built from within a version control repository, the Go command will
-embed the revision hash if available. However, if Caddy is built in the
-way specified by our online documentation (or by using xcaddy), more
+embed the revision hash if available. However, if Kengine is built in the
+way specified by our online documentation (or by using xkengine), more
 detailed version information is printed as given by Go modules.
 
 For more details about the full version string, see the Go module
@@ -223,7 +223,7 @@ documentation: https://go.dev/doc/modules/version-numbers
 	RegisterCommand(Command{
 		Name:  "list-modules",
 		Usage: "[--packages] [--versions] [--skip-standard]",
-		Short: "Lists the installed Caddy modules",
+		Short: "Lists the installed Kengine modules",
 		CobraFunc: func(cmd *cobra.Command) {
 			cmd.Flags().BoolP("packages", "", false, "Print package paths")
 			cmd.Flags().BoolP("versions", "", false, "Print version information")
@@ -243,22 +243,22 @@ documentation: https://go.dev/doc/modules/version-numbers
 		Usage: "[--envfile <path>]",
 		Short: "Prints the environment",
 		Long: `
-Prints the environment as seen by this Caddy process.
+Prints the environment as seen by this Kengine process.
 
-The environment includes variables set in the system. If your Caddy
+The environment includes variables set in the system. If your Kengine
 configuration uses environment variables (e.g. "{env.VARIABLE}") then
 this command can be useful for verifying that the variables will have
 the values you expect in your config.
 
 If --envfile is specified, an environment file with environment variables
-in the KEY=VALUE format will be loaded into the Caddy process.
+in the KEY=VALUE format will be loaded into the Kengine process.
 
-Note that environments may be different depending on how you run Caddy.
-Environments for Caddy instances started by service managers such as
+Note that environments may be different depending on how you run Kengine.
+Environments for Kengine instances started by service managers such as
 systemd are often different than the environment inherited from your
 shell or terminal.
 
-You can also print the environment the same time you use "caddy run"
+You can also print the environment the same time you use "kengine run"
 by adding the "--environ" flag.
 
 Environments may contain sensitive data.
@@ -272,9 +272,9 @@ Environments may contain sensitive data.
 	RegisterCommand(Command{
 		Name:  "adapt",
 		Usage: "--config <path> [--adapter <name>] [--pretty] [--validate] [--envfile <path>]",
-		Short: "Adapts a configuration to Caddy's native JSON",
+		Short: "Adapts a configuration to Kengine's native JSON",
 		Long: `
-Adapts a configuration to Caddy's native JSON format and writes the
+Adapts a configuration to Kengine's native JSON format and writes the
 output to stdout, along with any warnings to stderr.
 
 If --pretty is specified, the output will be formatted with indentation
@@ -285,11 +285,11 @@ If the config is invalid, an error will be printed to stderr and a non-
 zero exit status will be returned.
 
 If --envfile is specified, an environment file with environment variables
-in the KEY=VALUE format will be loaded into the Caddy process.
+in the KEY=VALUE format will be loaded into the Kengine process.
 `,
 		CobraFunc: func(cmd *cobra.Command) {
 			cmd.Flags().StringP("config", "c", "", "Configuration file to adapt (required)")
-			cmd.Flags().StringP("adapter", "a", "caddyfile", "Name of config adapter")
+			cmd.Flags().StringP("adapter", "a", "kenginefile", "Name of config adapter")
 			cmd.Flags().BoolP("pretty", "p", false, "Format the output for human readability")
 			cmd.Flags().BoolP("validate", "", false, "Validate the output")
 			cmd.Flags().StringSliceP("envfile", "", []string{}, "Environment file(s) to load")
@@ -307,7 +307,7 @@ This reveals any errors with the configuration through the loading and
 provisioning stages.
 
 If --envfile is specified, an environment file with environment variables
-in the KEY=VALUE format will be loaded into the Caddy process.
+in the KEY=VALUE format will be loaded into the Kengine process.
 `,
 		CobraFunc: func(cmd *cobra.Command) {
 			cmd.Flags().StringP("config", "c", "", "Input configuration file")
@@ -319,13 +319,13 @@ in the KEY=VALUE format will be loaded into the Caddy process.
 
 	RegisterCommand(Command{
 		Name:  "storage",
-		Short: "Commands for working with Caddy's storage (EXPERIMENTAL)",
+		Short: "Commands for working with Kengine's storage (EXPERIMENTAL)",
 		Long: `
-Allows exporting and importing Caddy's storage contents. The two commands can be
+Allows exporting and importing Kengine's storage contents. The two commands can be
 combined in a pipeline to transfer directly from one storage to another:
 
-$ caddy storage export --config Caddyfile.old --output - |
-> caddy storage import --config Caddyfile.new --input -
+$ kengine storage export --config Kenginefile.old --output - |
+> kengine storage import --config Kenginefile.new --input -
 
 The - argument refers to stdout and stdin, respectively.
 
@@ -370,9 +370,9 @@ a tar archive.
 	RegisterCommand(Command{
 		Name:  "fmt",
 		Usage: "[--overwrite] [--diff] [<path>]",
-		Short: "Formats a Caddyfile",
+		Short: "Formats a Kenginefile",
 		Long: `
-Formats the Caddyfile by adding proper indentation and spaces to improve
+Formats the Kenginefile by adding proper indentation and spaces to improve
 human readability. It prints the result to stdout.
 
 If --overwrite is specified, the output will be written to the config file
@@ -396,9 +396,9 @@ is always printed to stdout.
 
 	RegisterCommand(Command{
 		Name:  "upgrade",
-		Short: "Upgrade Caddy (EXPERIMENTAL)",
+		Short: "Upgrade Kengine (EXPERIMENTAL)",
 		Long: `
-Downloads an updated Caddy binary with the same modules/plugins at the
+Downloads an updated Kengine binary with the same modules/plugins at the
 latest versions. EXPERIMENTAL: May be changed or removed.
 `,
 		CobraFunc: func(cmd *cobra.Command) {
@@ -410,9 +410,9 @@ latest versions. EXPERIMENTAL: May be changed or removed.
 	RegisterCommand(Command{
 		Name:  "add-package",
 		Usage: "<packages...>",
-		Short: "Adds Caddy packages (EXPERIMENTAL)",
+		Short: "Adds Kengine packages (EXPERIMENTAL)",
 		Long: `
-Downloads an updated Caddy binary with the specified packages (module/plugin)
+Downloads an updated Kengine binary with the specified packages (module/plugin)
 added. Retains existing packages. Returns an error if the any of packages are
 already included. EXPERIMENTAL: May be changed or removed.
 `,
@@ -426,9 +426,9 @@ already included. EXPERIMENTAL: May be changed or removed.
 		Name:  "remove-package",
 		Func:  cmdRemovePackage,
 		Usage: "<packages...>",
-		Short: "Removes Caddy packages (EXPERIMENTAL)",
+		Short: "Removes Kengine packages (EXPERIMENTAL)",
 		Long: `
-Downloads an updated Caddy binaries without the specified packages (module/plugin).
+Downloads an updated Kengine binaries without the specified packages (module/plugin).
 Returns an error if any of the packages are not included.
 EXPERIMENTAL: May be changed or removed.
 `,
@@ -442,9 +442,9 @@ EXPERIMENTAL: May be changed or removed.
 		RegisterCommand(Command{
 			Name:  "manpage",
 			Usage: "--directory <path>",
-			Short: "Generates the manual pages for Caddy commands",
+			Short: "Generates the manual pages for Kengine commands",
 			Long: `
-Generates the manual pages for Caddy commands into the designated directory
+Generates the manual pages for Kengine commands into the designated directory
 tagged into section 8 (System Administration).
 
 The manual page files are generated into the directory specified by the
@@ -455,18 +455,18 @@ argument of --directory. If the directory does not exist, it will be created.
 				cmd.RunE = WrapCommandFuncForCobra(func(fl Flags) (int, error) {
 					dir := strings.TrimSpace(fl.String("directory"))
 					if dir == "" {
-						return caddy.ExitCodeFailedQuit, fmt.Errorf("designated output directory and specified section are required")
+						return kengine.ExitCodeFailedQuit, fmt.Errorf("designated output directory and specified section are required")
 					}
 					if err := os.MkdirAll(dir, 0o755); err != nil {
-						return caddy.ExitCodeFailedQuit, err
+						return kengine.ExitCodeFailedQuit, err
 					}
 					if err := doc.GenManTree(rootCmd, &doc.GenManHeader{
-						Title:   "Caddy",
+						Title:   "Kengine",
 						Section: "8", // https://en.wikipedia.org/wiki/Man_page#Manual_sections
 					}, dir); err != nil {
-						return caddy.ExitCodeFailedQuit, err
+						return kengine.ExitCodeFailedQuit, err
 					}
-					return caddy.ExitCodeSuccess, nil
+					return kengine.ExitCodeSuccess, nil
 				})
 			},
 		})
@@ -566,7 +566,7 @@ func RegisterCommand(cmd Command) {
 		panic("invalid command name")
 	}
 	defaultFactory.Use(func(rootCmd *cobra.Command) {
-		rootCmd.AddCommand(caddyCmdToCobra(cmd))
+		rootCmd.AddCommand(kengineCmdToCobra(cmd))
 	})
 }
 

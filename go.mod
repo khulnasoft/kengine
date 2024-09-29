@@ -1,23 +1,21 @@
-module github.com/caddyserver/caddy/v2
+module github.com/khulnasoft/kengine/v2
 
-go 1.22.3
-
-toolchain go1.23.0
+go 1.23.1
 
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/alecthomas/chroma/v2 v2.13.0
 	github.com/aryann/difflib v0.0.0-20210328193216-ff5ff6dc229b
-	github.com/caddyserver/certmagic v0.21.3
-	github.com/caddyserver/zerossl v0.1.3
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/google/cel-go v0.20.1
 	github.com/google/uuid v1.6.0
+	github.com/khulnasoft-lab/certmagic v0.21.2
+	github.com/khulnasoft-lab/zerossl v0.1.0
 	github.com/klauspost/compress v1.17.8
 	github.com/klauspost/cpuid/v2 v2.2.7
-	github.com/mholt/acmez/v2 v2.0.1
+	github.com/mholt/acmez/v2 v2.0.2
 	github.com/prometheus/client_golang v1.19.1
 	github.com/quic-go/quic-go v0.47.0
 	github.com/smallstep/certificates v0.26.1

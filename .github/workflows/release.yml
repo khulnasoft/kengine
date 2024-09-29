@@ -118,7 +118,7 @@ jobs:
     # Only publish on non-special tags (e.g. non-beta)
     # We will continue to push to Gemfury for the foreseeable future, although
     # Cloudsmith is probably better, to not break things for existing users of Gemfury.
-    # See https://gemfury.com/caddy/deb:caddy
+    # See https://gemfury.com/kengine/deb:kengine
     - name: Publish .deb to Gemfury
       if: ${{ steps.vars.outputs.tag_special == '' }}
       env:
@@ -131,11 +131,11 @@ jobs:
             continue
           fi
 
-          curl -F package=@"$filename" https://${GEMFURY_PUSH_TOKEN}:@push.fury.io/caddy/
+          curl -F package=@"$filename" https://${GEMFURY_PUSH_TOKEN}:@push.fury.io/kengine/
         done
 
     # Publish only special tags (unstable/beta/rc) to the "testing" repo
-    # See https://cloudsmith.io/~caddy/repos/testing/
+    # See https://cloudsmith.io/~kengine/repos/testing/
     - name: Publish .deb to Cloudsmith (special tags)
       if: ${{ steps.vars.outputs.tag_special != '' }}
       env:
@@ -149,11 +149,11 @@ jobs:
           fi
 
           echo "Pushing $filename to 'testing'"
-          cloudsmith push deb caddy/testing/any-distro/any-version $filename
+          cloudsmith push deb kengine/testing/any-distro/any-version $filename
         done
 
     # Publish stable tags to Cloudsmith to both repos, "stable" and "testing"
-    # See https://cloudsmith.io/~caddy/repos/stable/
+    # See https://cloudsmith.io/~kengine/repos/stable/
     - name: Publish .deb to Cloudsmith (stable tags)
       if: ${{ steps.vars.outputs.tag_special == '' }}
       env:
@@ -167,8 +167,8 @@ jobs:
           fi
 
           echo "Pushing $filename to 'stable'"
-          cloudsmith push deb caddy/stable/any-distro/any-version $filename
+          cloudsmith push deb kengine/stable/any-distro/any-version $filename
 
           echo "Pushing $filename to 'testing'"
-          cloudsmith push deb caddy/testing/any-distro/any-version $filename
+          cloudsmith push deb kengine/testing/any-distro/any-version $filename
         done

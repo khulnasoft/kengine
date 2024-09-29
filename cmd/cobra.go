@@ -1,111 +1,111 @@
-package caddycmd
+package kenginecmd
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
-	"github.com/caddyserver/caddy/v2"
+	"github.com/khulnasoft/kengine/v2"
 )
 
 var defaultFactory = newRootCommandFactory(func() *cobra.Command {
 	return &cobra.Command{
-		Use: "caddy",
-		Long: `Caddy is an extensible server platform written in Go.
+		Use: "kengine",
+		Long: `Kengine is an extensible server platform written in Go.
 
-At its core, Caddy merely manages configuration. Modules are plugged
-in statically at compile-time to provide useful functionality. Caddy's
+At its core, Kengine merely manages configuration. Modules are plugged
+in statically at compile-time to provide useful functionality. Kengine's
 standard distribution includes common modules to serve HTTP, TLS,
 and PKI applications, including the automation of certificates.
 
-To run Caddy, use:
+To run Kengine, use:
 
-	- 'caddy run' to run Caddy in the foreground (recommended).
-	- 'caddy start' to start Caddy in the background; only do this
+	- 'kengine run' to run Kengine in the foreground (recommended).
+	- 'kengine start' to start Kengine in the background; only do this
 	  if you will be keeping the terminal window open until you run
-	  'caddy stop' to close the server.
+	  'kengine stop' to close the server.
 
-When Caddy is started, it opens a locally-bound administrative socket
+When Kengine is started, it opens a locally-bound administrative socket
 to which configuration can be POSTed via a restful HTTP API (see
-https://caddyserver.com/docs/api).
+https://khulnasoft.com/docs/api).
 
-Caddy's native configuration format is JSON. However, config adapters
-can be used to convert other config formats to JSON when Caddy receives
-its configuration. The Caddyfile is a built-in config adapter that is
+Kengine's native configuration format is JSON. However, config adapters
+can be used to convert other config formats to JSON when Kengine receives
+its configuration. The Kenginefile is a built-in config adapter that is
 popular for hand-written configurations due to its straightforward
-syntax (see https://caddyserver.com/docs/caddyfile). Many third-party
-adapters are available (see https://caddyserver.com/docs/config-adapters).
-Use 'caddy adapt' to see how a config translates to JSON.
+syntax (see https://khulnasoft.com/docs/kenginefile). Many third-party
+adapters are available (see https://khulnasoft.com/docs/config-adapters).
+Use 'kengine adapt' to see how a config translates to JSON.
 
-For convenience, the CLI can act as an HTTP client to give Caddy its
-initial configuration for you. If a file named Caddyfile is in the
+For convenience, the CLI can act as an HTTP client to give Kengine its
+initial configuration for you. If a file named Kenginefile is in the
 current working directory, it will do this automatically. Otherwise,
 you can use the --config flag to specify the path to a config file.
 
 Some special-purpose subcommands build and load a configuration file
 for you directly from command line input; for example:
 
-	- caddy file-server
-	- caddy reverse-proxy
-	- caddy respond
+	- kengine file-server
+	- kengine reverse-proxy
+	- kengine respond
 
 These commands disable the administration endpoint because their
 configuration is specified solely on the command line.
 
-In general, the most common way to run Caddy is simply:
+In general, the most common way to run Kengine is simply:
 
-	$ caddy run
+	$ kengine run
 
 Or, with a configuration file:
 
-	$ caddy run --config caddy.json
+	$ kengine run --config kengine.json
 
-If running interactively in a terminal, running Caddy in the
+If running interactively in a terminal, running Kengine in the
 background may be more convenient:
 
-	$ caddy start
+	$ kengine start
 	...
-	$ caddy stop
+	$ kengine stop
 
-This allows you to run other commands while Caddy stays running.
-Be sure to stop Caddy before you close the terminal!
+This allows you to run other commands while Kengine stays running.
+Be sure to stop Kengine before you close the terminal!
 
-Depending on the system, Caddy may need permission to bind to low
+Depending on the system, Kengine may need permission to bind to low
 ports. One way to do this on Linux is to use setcap:
 
-	$ sudo setcap cap_net_bind_service=+ep $(which caddy)
+	$ sudo setcap cap_net_bind_service=+ep $(which kengine)
 
 Remember to run that command again after replacing the binary.
 
-See the Caddy website for tutorials, configuration structure,
-syntax, and module documentation: https://caddyserver.com/docs/
+See the Kengine website for tutorials, configuration structure,
+syntax, and module documentation: https://khulnasoft.com/docs/
 
-Custom Caddy builds are available on the Caddy download page at:
-https://caddyserver.com/download
+Custom Kengine builds are available on the Kengine download page at:
+https://khulnasoft.com/download
 
-The xcaddy command can be used to build Caddy from source with or
-without additional plugins: https://github.com/caddyserver/xcaddy
+The xkengine command can be used to build Kengine from source with or
+without additional plugins: https://github.com/khulnasoft/xkengine
 
-Where possible, Caddy should be installed using officially-supported
-package installers: https://caddyserver.com/docs/install
+Where possible, Kengine should be installed using officially-supported
+package installers: https://khulnasoft.com/docs/install
 
-Instructions for running Caddy in production are also available:
-https://caddyserver.com/docs/running
+Instructions for running Kengine in production are also available:
+https://khulnasoft.com/docs/running
 `,
-		Example: `  $ caddy run
-  $ caddy run --config caddy.json
-  $ caddy reload --config caddy.json
-  $ caddy stop`,
+		Example: `  $ kengine run
+  $ kengine run --config kengine.json
+  $ kengine reload --config kengine.json
+  $ kengine stop`,
 
 		// kind of annoying to have all the help text printed out if
-		// caddy has an error provisioning its modules, for instance...
+		// kengine has an error provisioning its modules, for instance...
 		SilenceUsage: true,
 		Version:      onlyVersionText(),
 	}
 })
 
 const fullDocsFooter = `Full documentation is available at:
-https://caddyserver.com/docs/command-line`
+https://khulnasoft.com/docs/command-line`
 
 func init() {
 	defaultFactory.Use(func(rootCmd *cobra.Command) {
@@ -115,26 +115,26 @@ func init() {
 }
 
 func onlyVersionText() string {
-	_, f := caddy.Version()
+	_, f := kengine.Version()
 	return f
 }
 
-func caddyCmdToCobra(caddyCmd Command) *cobra.Command {
+func kengineCmdToCobra(kengineCmd Command) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   caddyCmd.Name + " " + caddyCmd.Usage,
-		Short: caddyCmd.Short,
-		Long:  caddyCmd.Long,
+		Use:   kengineCmd.Name + " " + kengineCmd.Usage,
+		Short: kengineCmd.Short,
+		Long:  kengineCmd.Long,
 	}
-	if caddyCmd.CobraFunc != nil {
-		caddyCmd.CobraFunc(cmd)
+	if kengineCmd.CobraFunc != nil {
+		kengineCmd.CobraFunc(cmd)
 	} else {
-		cmd.RunE = WrapCommandFuncForCobra(caddyCmd.Func)
-		cmd.Flags().AddGoFlagSet(caddyCmd.Flags)
+		cmd.RunE = WrapCommandFuncForCobra(kengineCmd.Func)
+		cmd.Flags().AddGoFlagSet(kengineCmd.Flags)
 	}
 	return cmd
 }
 
-// WrapCommandFuncForCobra wraps a Caddy CommandFunc for use
+// WrapCommandFuncForCobra wraps a Kengine CommandFunc for use
 // in a cobra command's RunE field.
 func WrapCommandFuncForCobra(f CommandFunc) func(cmd *cobra.Command, _ []string) error {
 	return func(cmd *cobra.Command, _ []string) error {

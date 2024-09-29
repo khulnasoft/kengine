@@ -17,19 +17,19 @@ jobs:
     steps:
 
     # See https://github.com/peter-evans/repository-dispatch
-    - name: Trigger event on caddyserver/dist
+    - name: Trigger event on khulnasoft/dist
       uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.REPO_DISPATCH_TOKEN }}
-        repository: caddyserver/dist
+        repository: khulnasoft/dist
         event-type: release-tagged
         client-payload: '{"tag": "${{ github.event.release.tag_name }}"}'
 
-    - name: Trigger event on caddyserver/caddy-docker
+    - name: Trigger event on khulnasoft/kengine-docker
       uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.REPO_DISPATCH_TOKEN }}
-        repository: caddyserver/caddy-docker
+        repository: khulnasoft/kengine-docker
         event-type: release-tagged
         client-payload: '{"tag": "${{ github.event.release.tag_name }}"}'
 

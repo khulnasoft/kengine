@@ -1,6 +1,6 @@
 //go:build unix && !freebsd && !solaris
 
-package caddy
+package kengine
 
 import "golang.org/x/sys/unix"
 

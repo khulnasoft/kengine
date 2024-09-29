@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,18 +46,18 @@ func sdNotify(payload string) error {
 	return err
 }
 
-// Ready notifies systemd that caddy has finished its
+// Ready notifies systemd that kengine has finished its
 // initialization routines.
 func Ready() error {
 	return sdNotify("READY=1")
 }
 
-// Reloading notifies systemd that caddy is reloading its config.
+// Reloading notifies systemd that kengine is reloading its config.
 func Reloading() error {
 	return sdNotify("RELOADING=1")
 }
 
-// Stopping notifies systemd that caddy is stopping.
+// Stopping notifies systemd that kengine is stopping.
 func Stopping() error {
 	return sdNotify("STOPPING=1")
 }

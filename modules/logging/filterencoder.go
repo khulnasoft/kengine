@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ import (
 	"go.uber.org/zap/zapcore"
 	"golang.org/x/term"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
 func init() {
-	caddy.RegisterModule(FilterEncoder{})
+	kengine.RegisterModule(FilterEncoder{})
 }
 
 // FilterEncoder can filter (manipulate) fields on
@@ -42,7 +42,7 @@ type FilterEncoder struct {
 	// log entries. If not specified, defaults to "json",
 	// unless the output is a terminal, in which case
 	// it defaults to "console".
-	WrappedRaw json.RawMessage `json:"wrap,omitempty" caddy:"namespace=caddy.logging.encoders inline_key=format"`
+	WrappedRaw json.RawMessage `json:"wrap,omitempty" kengine:"namespace=kengine.logging.encoders inline_key=format"`
 
 	// A map of field names to their filters. Note that this
 	// is not a module map; the keys are field names.
@@ -56,7 +56,7 @@ type FilterEncoder struct {
 	// cannot be filtered because they are added by the
 	// underlying logging library as special cases: ts,
 	// level, logger, and msg.
-	FieldsRaw map[string]json.RawMessage `json:"fields,omitempty" caddy:"namespace=caddy.logging.encoders.filter inline_key=filter"`
+	FieldsRaw map[string]json.RawMessage `json:"fields,omitempty" kengine:"namespace=kengine.logging.encoders.filter inline_key=filter"`
 
 	wrapped zapcore.Encoder
 	Fields  map[string]LogFieldFilter `json:"-"`
@@ -65,25 +65,25 @@ type FilterEncoder struct {
 	keyPrefix string
 
 	wrappedIsDefault bool
-	ctx              caddy.Context
+	ctx              kengine.Context
 }
 
-// CaddyModule returns the Caddy module information.
-func (FilterEncoder) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.encoders.filter",
-		New: func() caddy.Module { return new(FilterEncoder) },
+// KengineModule returns the Kengine module information.
+func (FilterEncoder) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.encoders.filter",
+		New: func() kengine.Module { return new(FilterEncoder) },
 	}
 }
 
 // Provision sets up the encoder.
-func (fe *FilterEncoder) Provision(ctx caddy.Context) error {
+func (fe *FilterEncoder) Provision(ctx kengine.Context) error {
 	fe.ctx = ctx
 
 	if fe.WrappedRaw == nil {
 		// if wrap is not specified, default to JSON
 		fe.wrapped = &JSONEncoder{}
-		if p, ok := fe.wrapped.(caddy.Provisioner); ok {
+		if p, ok := fe.wrapped.(kengine.Provisioner); ok {
 			if err := p.Provision(ctx); err != nil {
 				return fmt.Errorf("provisioning fallback encoder module: %v", err)
 			}
@@ -117,17 +117,17 @@ func (fe *FilterEncoder) Provision(ctx caddy.Context) error {
 // if the writer is a terminal. If already configured as a filter
 // encoder, it passes through the writer so a deeply nested filter
 // encoder can configure its own default format.
-func (fe *FilterEncoder) ConfigureDefaultFormat(wo caddy.WriterOpener) error {
+func (fe *FilterEncoder) ConfigureDefaultFormat(wo kengine.WriterOpener) error {
 	if !fe.wrappedIsDefault {
-		if cfd, ok := fe.wrapped.(caddy.ConfiguresFormatterDefault); ok {
+		if cfd, ok := fe.wrapped.(kengine.ConfiguresFormatterDefault); ok {
 			return cfd.ConfigureDefaultFormat(wo)
 		}
 		return nil
 	}
 
-	if caddy.IsWriterStandardStream(wo) && term.IsTerminal(int(os.Stderr.Fd())) {
+	if kengine.IsWriterStandardStream(wo) && term.IsTerminal(int(os.Stderr.Fd())) {
 		fe.wrapped = &ConsoleEncoder{}
-		if p, ok := fe.wrapped.(caddy.Provisioner); ok {
+		if p, ok := fe.wrapped.(kengine.Provisioner); ok {
 			if err := p.Provision(fe.ctx); err != nil {
 				return fmt.Errorf("provisioning fallback encoder module: %v", err)
 			}
@@ -136,7 +136,7 @@ func (fe *FilterEncoder) ConfigureDefaultFormat(wo caddy.WriterOpener) error {
 	return nil
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens. Syntax:
+// UnmarshalKenginefile sets up the module from Kenginefile tokens. Syntax:
 //
 //	filter {
 //	    wrap <another encoder>
@@ -149,7 +149,7 @@ func (fe *FilterEncoder) ConfigureDefaultFormat(wo caddy.WriterOpener) error {
 //	        <filter options>
 //	    }
 //	}
-func (fe *FilterEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (fe *FilterEncoder) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume encoder name
 
 	// parse a field
@@ -162,8 +162,8 @@ func (fe *FilterEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 			return d.ArgErr()
 		}
 		filterName := d.Val()
-		moduleID := "caddy.logging.encoders.filter." + filterName
-		unm, err := caddyfile.UnmarshalModule(d, moduleID)
+		moduleID := "kengine.logging.encoders.filter." + filterName
+		unm, err := kenginefile.UnmarshalModule(d, moduleID)
 		if err != nil {
 			return err
 		}
@@ -171,7 +171,7 @@ func (fe *FilterEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 		if !ok {
 			return d.Errf("module %s (%T) is not a logging.LogFieldFilter", moduleID, unm)
 		}
-		fe.FieldsRaw[field] = caddyconfig.JSONModuleObject(filter, "filter", filterName, nil)
+		fe.FieldsRaw[field] = kengineconfig.JSONModuleObject(filter, "filter", filterName, nil)
 		return nil
 	}
 
@@ -182,8 +182,8 @@ func (fe *FilterEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 				return d.ArgErr()
 			}
 			moduleName := d.Val()
-			moduleID := "caddy.logging.encoders." + moduleName
-			unm, err := caddyfile.UnmarshalModule(d, moduleID)
+			moduleID := "kengine.logging.encoders." + moduleName
+			unm, err := kenginefile.UnmarshalModule(d, moduleID)
 			if err != nil {
 				return err
 			}
@@ -191,7 +191,7 @@ func (fe *FilterEncoder) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 			if !ok {
 				return d.Errf("module %s (%T) is not a zapcore.Encoder", moduleID, unm)
 			}
-			fe.WrappedRaw = caddyconfig.JSONModuleObject(enc, "format", moduleName, nil)
+			fe.WrappedRaw = kengineconfig.JSONModuleObject(enc, "format", moduleName, nil)
 
 		case "fields":
 			for nesting := d.Nesting(); d.NextBlock(nesting); {
@@ -449,6 +449,6 @@ func (mom logObjectMarshalerWrapper) MarshalLogObject(_ zapcore.ObjectEncoder) e
 var (
 	_ zapcore.Encoder                  = (*FilterEncoder)(nil)
 	_ zapcore.ObjectMarshaler          = (*logObjectMarshalerWrapper)(nil)
-	_ caddyfile.Unmarshaler            = (*FilterEncoder)(nil)
-	_ caddy.ConfiguresFormatterDefault = (*FilterEncoder)(nil)
+	_ kenginefile.Unmarshaler            = (*FilterEncoder)(nil)
+	_ kengine.ConfiguresFormatterDefault = (*FilterEncoder)(nil)
 )

@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 // literal GOOS values, and "unix" is a shortcut unique to build tags.
 //go:build unix && !solaris
 
-package caddy
+package kengine
 
 import (
 	"context"

@@ -8,8 +8,8 @@ linters-settings:
     sections:
       - standard # Standard section: captures all standard packages.
       - default # Default section: contains all imports that could not be matched to another section type.
-      - prefix(github.com/caddyserver/caddy/v2/cmd) # ensure that this is always at the top and always has a line break.
-      - prefix(github.com/caddyserver/caddy) # Custom section: groups all imports with the specified Prefix.
+      - prefix(github.com/khulnasoft/kengine/v2/cmd) # ensure that this is always at the top and always has a line break.
+      - prefix(github.com/khulnasoft/kengine) # Custom section: groups all imports with the specified Prefix.
     # Skip generated files.
     # Default: true
     skip-generated: true
@@ -160,11 +160,11 @@ issues:
       linters:
         - gosec
     # the choice of weakrand is deliberate, hence the named import "weakrand"
-    - path: modules/caddyhttp/reverseproxy/selectionpolicies.go
+    - path: modules/kenginehttp/reverseproxy/selectionpolicies.go
       text: 'G404' # G404: Insecure random number source (rand)
       linters:
         - gosec
-    - path: modules/caddyhttp/reverseproxy/streaming.go
+    - path: modules/kenginehttp/reverseproxy/streaming.go
       text: 'G404' # G404: Insecure random number source (rand)
       linters:
         - gosec

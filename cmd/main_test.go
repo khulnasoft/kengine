@@ -1,4 +1,4 @@
-package caddycmd
+package kenginecmd
 
 import (
 	"reflect"
@@ -169,7 +169,7 @@ here"
 	}
 }
 
-func Test_isCaddyfile(t *testing.T) {
+func Test_isKenginefile(t *testing.T) {
 	type args struct {
 		configFile  string
 		adapterName string
@@ -181,54 +181,54 @@ func Test_isCaddyfile(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "bare Caddyfile without adapter",
+			name: "bare Kenginefile without adapter",
 			args: args{
-				configFile:  "Caddyfile",
+				configFile:  "Kenginefile",
 				adapterName: "",
 			},
 			want:    true,
 			wantErr: false,
 		},
 		{
-			name: "local Caddyfile without adapter",
+			name: "local Kenginefile without adapter",
 			args: args{
-				configFile:  "./Caddyfile",
+				configFile:  "./Kenginefile",
 				adapterName: "",
 			},
 			want:    true,
 			wantErr: false,
 		},
 		{
-			name: "local caddyfile with adapter",
+			name: "local kenginefile with adapter",
 			args: args{
-				configFile:  "./Caddyfile",
-				adapterName: "caddyfile",
+				configFile:  "./Kenginefile",
+				adapterName: "kenginefile",
 			},
 			want:    true,
 			wantErr: false,
 		},
 		{
-			name: "ends with .caddyfile with adapter",
+			name: "ends with .kenginefile with adapter",
 			args: args{
-				configFile:  "./conf.caddyfile",
-				adapterName: "caddyfile",
+				configFile:  "./conf.kenginefile",
+				adapterName: "kenginefile",
 			},
 			want:    true,
 			wantErr: false,
 		},
 		{
-			name: "ends with .caddyfile without adapter",
+			name: "ends with .kenginefile without adapter",
 			args: args{
-				configFile:  "./conf.caddyfile",
+				configFile:  "./conf.kenginefile",
 				adapterName: "",
 			},
 			want:    true,
 			wantErr: false,
 		},
 		{
-			name: "config is Caddyfile.yaml with adapter",
+			name: "config is Kenginefile.yaml with adapter",
 			args: args{
-				configFile:  "./Caddyfile.yaml",
+				configFile:  "./Kenginefile.yaml",
 				adapterName: "yaml",
 			},
 			want:    false,
@@ -236,9 +236,9 @@ func Test_isCaddyfile(t *testing.T) {
 		},
 		{
 			
-			name: "json is not caddyfile but not error",
+			name: "json is not kenginefile but not error",
 			args: args{
-				configFile:  "./Caddyfile.json",
+				configFile:  "./Kenginefile.json",
 				adapterName: "",
 			},
 			want:    false,
@@ -246,9 +246,9 @@ func Test_isCaddyfile(t *testing.T) {
 		},
 		{
 			
-			name: "prefix of Caddyfile and ./ with any extension is Caddyfile",
+			name: "prefix of Kenginefile and ./ with any extension is Kenginefile",
 			args: args{
-				configFile:  "./Caddyfile.prd",
+				configFile:  "./Kenginefile.prd",
 				adapterName: "",
 			},
 			want:    true,
@@ -256,9 +256,9 @@ func Test_isCaddyfile(t *testing.T) {
 		},
 		{
 			
-			name: "prefix of Caddyfile without ./ with any extension is Caddyfile",
+			name: "prefix of Kenginefile without ./ with any extension is Kenginefile",
 			args: args{
-				configFile:  "Caddyfile.prd",
+				configFile:  "Kenginefile.prd",
 				adapterName: "",
 			},
 			want:    true,
@@ -267,13 +267,13 @@ func Test_isCaddyfile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := isCaddyfile(tt.args.configFile, tt.args.adapterName)
+			got, err := isKenginefile(tt.args.configFile, tt.args.adapterName)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("isCaddyfile() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("isKenginefile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("isCaddyfile() = %v, want %v", got, tt.want)
+				t.Errorf("isKenginefile() = %v, want %v", got, tt.want)
 			}
 		})
 	}

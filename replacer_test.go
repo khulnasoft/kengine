@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package caddy
+package kengine
 
 import (
 	"fmt"
@@ -381,8 +381,8 @@ func TestReplacerNew(t *testing.T) {
 	// test if default global replacements are added as the first provider
 	hostname, _ := os.Hostname()
 	wd, _ := os.Getwd()
-	os.Setenv("CADDY_REPLACER_TEST", "envtest")
-	defer os.Setenv("CADDY_REPLACER_TEST", "")
+	os.Setenv("KENGINE_REPLACER_TEST", "envtest")
+	defer os.Setenv("KENGINE_REPLACER_TEST", "")
 
 	for _, tc := range []struct {
 		variable string
@@ -409,7 +409,7 @@ func TestReplacerNew(t *testing.T) {
 			value:    wd,
 		},
 		{
-			variable: "env.CADDY_REPLACER_TEST",
+			variable: "env.KENGINE_REPLACER_TEST",
 			value:    "envtest",
 		},
 	} {
@@ -428,15 +428,15 @@ func TestReplacerNew(t *testing.T) {
 		value    string
 	}{
 		{
-			variable: "file.caddytest/integration/testdata/foo.txt",
+			variable: "file.kenginetest/integration/testdata/foo.txt",
 			value:    "foo",
 		},
 		{
-			variable: "file.caddytest/integration/testdata/foo_with_trailing_newline.txt",
+			variable: "file.kenginetest/integration/testdata/foo_with_trailing_newline.txt",
 			value:    "foo",
 		},
 		{
-			variable: "file.caddytest/integration/testdata/foo_with_multiple_trailing_newlines.txt",
+			variable: "file.kenginetest/integration/testdata/foo_with_multiple_trailing_newlines.txt",
 			value:    "foo" + getEOL(),
 		},
 	} {
@@ -466,7 +466,7 @@ func TestReplacerNewWithoutFile(t *testing.T) {
 		notFound bool
 	}{
 		{
-			variable: "file.caddytest/integration/testdata/foo.txt",
+			variable: "file.kenginetest/integration/testdata/foo.txt",
 			notFound: true,
 		},
 		{

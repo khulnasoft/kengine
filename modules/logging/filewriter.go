@@ -1,4 +1,4 @@
-// Copyright 2015 Matthew Holt and The Caddy Authors
+// Copyright 2015 Matthew Holt and The Kengine Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@ import (
 	"github.com/dustin/go-humanize"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/caddyserver/caddy/v2"
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
 )
 
 func init() {
-	caddy.RegisterModule(FileWriter{})
+	kengine.RegisterModule(FileWriter{})
 }
 
 // fileMode is a string made of 1 to 4 octal digits representing
@@ -111,18 +111,18 @@ type FileWriter struct {
 	RollKeepDays int `json:"roll_keep_days,omitempty"`
 }
 
-// CaddyModule returns the Caddy module information.
-func (FileWriter) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID:  "caddy.logging.writers.file",
-		New: func() caddy.Module { return new(FileWriter) },
+// KengineModule returns the Kengine module information.
+func (FileWriter) KengineModule() kengine.ModuleInfo {
+	return kengine.ModuleInfo{
+		ID:  "kengine.logging.writers.file",
+		New: func() kengine.Module { return new(FileWriter) },
 	}
 }
 
 // Provision sets up the module
-func (fw *FileWriter) Provision(ctx caddy.Context) error {
+func (fw *FileWriter) Provision(ctx kengine.Context) error {
 	// Replace placeholder in filename
-	repl := caddy.NewReplacer()
+	repl := kengine.NewReplacer()
 	filename, err := repl.ReplaceOrErr(fw.Filename, true, true)
 	if err != nil {
 		return fmt.Errorf("invalid filename for log file: %v", err)
@@ -194,7 +194,7 @@ func (fw FileWriter) OpenWriter() (io.WriteCloser, error) {
 	return os.OpenFile(fw.Filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, os.FileMode(fw.Mode))
 }
 
-// UnmarshalCaddyfile sets up the module from Caddyfile tokens. Syntax:
+// UnmarshalKenginefile sets up the module from Kenginefile tokens. Syntax:
 //
 //	file <filename> {
 //	    mode          <mode>
@@ -216,9 +216,9 @@ func (fw FileWriter) OpenWriter() (io.WriteCloser, error) {
 // Fractional values are rounded up to the next whole number of days.
 //
 // If any of the mode, roll_size, roll_keep, or roll_keep_for subdirectives are
-// omitted or set to a zero value, then Caddy's default value for that
+// omitted or set to a zero value, then Kengine's default value for that
 // subdirective is used.
-func (fw *FileWriter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+func (fw *FileWriter) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 	d.Next() // consume writer name
 	if !d.NextArg() {
 		return d.ArgErr()
@@ -288,7 +288,7 @@ func (fw *FileWriter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 			if !d.AllArgs(&keepForStr) {
 				return d.ArgErr()
 			}
-			keepFor, err := caddy.ParseDuration(keepForStr)
+			keepFor, err := kengine.ParseDuration(keepForStr)
 			if err != nil {
 				return d.Errf("parsing roll_keep_for duration: %v", err)
 			}
@@ -303,7 +303,7 @@ func (fw *FileWriter) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 // Interface guards
 var (
-	_ caddy.Provisioner     = (*FileWriter)(nil)
-	_ caddy.WriterOpener    = (*FileWriter)(nil)
-	_ caddyfile.Unmarshaler = (*FileWriter)(nil)
+	_ kengine.Provisioner     = (*FileWriter)(nil)
+	_ kengine.WriterOpener    = (*FileWriter)(nil)
+	_ kenginefile.Unmarshaler = (*FileWriter)(nil)
 )
