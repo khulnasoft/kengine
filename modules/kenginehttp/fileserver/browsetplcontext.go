@@ -31,8 +31,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
 )
 
 func (fsrv *FileServer) directoryListing(ctx context.Context, fileSystem fs.FS, entries []fs.DirEntry, canGoUp bool, root, urlPath string, repl *kengine.Replacer) *browseTemplateContext {

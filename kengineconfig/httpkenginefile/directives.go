@@ -22,10 +22,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
 )
 
 // defaultDirectiveOrder specifies the default order

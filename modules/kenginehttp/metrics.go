@@ -10,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
-	"github.com/khulnasoft/kengine/v2/internal/metrics"
+	"github.com/khulnasoft/kengine/internal/metrics"
 )
 
 // Metrics configures metrics observations.

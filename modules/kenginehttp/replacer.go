@@ -41,8 +41,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kenginetls"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginetls"
 )
 
 // NewTestReplacer creates a replacer for an http.Request

@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig"
 )
 
 // Adapter adapts Kenginefile to Kengine JSON.

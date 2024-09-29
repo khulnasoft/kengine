@@ -39,8 +39,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/khulnasoft/kengine/v2/internal/filesystems"
-	"github.com/khulnasoft/kengine/v2/notify"
+	"github.com/khulnasoft/kengine/internal/filesystems"
+	"github.com/khulnasoft/kengine/notify"
 )
 
 // Config is the top (or beginning) of the Kengine configuration structure.
@@ -909,7 +909,7 @@ func InstanceID() (uuid.UUID, error) {
 //
 // Set this variable during `go build` with `-ldflags`:
 //
-//	-ldflags '-X github.com/khulnasoft/kengine/v2.CustomVersion=v2.6.2'
+//	-ldflags '-X github.com/khulnasoft/kengine.CustomVersion=v2.6.2'
 //
 // for example.
 var CustomVersion string
@@ -1081,4 +1081,4 @@ var errSameConfig = errors.New("config is unchanged")
 
 // ImportPath is the package import path for Kengine core.
 // This identifier may be removed in the future.
-const ImportPath = "github.com/khulnasoft/kengine/v2"
+const ImportPath = "github.com/khulnasoft/kengine"

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 type ComplexShorthandReplacer struct {

@@ -3,8 +3,8 @@ package logging
 import (
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
 	"go.uber.org/zap/zapcore"
 )
 

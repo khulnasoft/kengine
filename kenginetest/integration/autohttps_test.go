@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine/kenginetest"
 )
 
 func TestAutoHTTPtoHTTPSRedirectsImplicitPort(t *testing.T) {

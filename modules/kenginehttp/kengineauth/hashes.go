@@ -17,7 +17,7 @@ package kengineauth
 import (
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {

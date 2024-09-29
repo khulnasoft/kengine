@@ -3,7 +3,7 @@ package metrics
 import (
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 func TestMetricsUnmarshalKenginefile(t *testing.T) {

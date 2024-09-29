@@ -24,8 +24,8 @@ import (
 	"github.com/khulnasoft-lab/certmagic"
 	"go.uber.org/zap"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kenginetls"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginetls"
 )
 
 // AutoHTTPSConfig is used to disable automatic HTTPS

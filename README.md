@@ -14,7 +14,7 @@
 <p align="center">Kengine is an extensible server platform that uses TLS by default.</p>
 <p align="center">
 	<a href="https://github.com/khulnasoft/kengine/actions/workflows/ci.yml"><img src="https://github.com/khulnasoft/kengine/actions/workflows/ci.yml/badge.svg"></a>
-	<a href="https://pkg.go.dev/github.com/khulnasoft/kengine/v2"><img src="https://img.shields.io/badge/godoc-reference-%23007d9c.svg"></a>
+	<a href="https://pkg.go.dev/github.com/khulnasoft/kengine"><img src="https://img.shields.io/badge/godoc-reference-%23007d9c.svg"></a>
 	<br>
 	<a href="https://twitter.com/khulnasoft" title="@khulnasoft on Twitter"><img src="https://img.shields.io/badge/twitter-@khulnasoft-55acee.svg" alt="@khulnasoft on Twitter"></a>
 	<a href="https://kengine.community" title="Kengine Forum"><img src="https://img.shields.io/badge/community-forum-ff69b4.svg" alt="Kengine Forum"></a>
@@ -129,7 +129,7 @@ $ xkengine build
 2. Change into it: `cd kengine`
 3. Copy [Kengine's main.go](https://github.com/khulnasoft/kengine/blob/master/cmd/kengine/main.go) into the empty folder. Add imports for any custom plugins you want to add.
 4. Initialize a Go module: `go mod init kengine`
-5. (Optional) Pin Kengine version: `go get github.com/khulnasoft/kengine/v2@version` replacing `version` with a git tag, commit, or branch name.
+5. (Optional) Pin Kengine version: `go get github.com/khulnasoft/kengine@version` replacing `version` with a git tag, commit, or branch name.
 6. (Optional) Add plugins by adding their import: `_ "import/path/here"`
 7. Compile: `go build`
 

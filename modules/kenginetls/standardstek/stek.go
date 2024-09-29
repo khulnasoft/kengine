@@ -20,8 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kenginetls"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginetls"
 )
 
 func init() {

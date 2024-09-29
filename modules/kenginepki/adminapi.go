@@ -22,7 +22,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {

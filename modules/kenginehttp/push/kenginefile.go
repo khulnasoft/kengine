@@ -15,9 +15,9 @@
 package push
 
 import (
-	"github.com/khulnasoft/kengine/v2/kengineconfig/httpkenginefile"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp/headers"
+	"github.com/khulnasoft/kengine/kengineconfig/httpkenginefile"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
+	"github.com/khulnasoft/kengine/modules/kenginehttp/headers"
 )
 
 func init() {

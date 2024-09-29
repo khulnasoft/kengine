@@ -38,8 +38,8 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig"
 )
 
 func init() {

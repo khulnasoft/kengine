@@ -20,7 +20,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 type parsedAddr struct {

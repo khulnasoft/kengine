@@ -18,7 +18,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/internal"
+	"github.com/khulnasoft/kengine/internal"
 )
 
 func TestSplitNetworkAddress(t *testing.T) {

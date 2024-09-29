@@ -30,11 +30,11 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	kenginecmd "github.com/khulnasoft/kengine/v2/cmd"
+	kenginecmd "github.com/khulnasoft/kengine/cmd"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 func init() {

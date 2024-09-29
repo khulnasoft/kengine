@@ -31,7 +31,7 @@ import (
 	"github.com/smallstep/truststore"
 	"go.uber.org/zap"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 // CA describes a certificate authority, which consists of

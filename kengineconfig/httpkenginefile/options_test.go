@@ -3,8 +3,8 @@ package httpkenginefile
 import (
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	_ "github.com/khulnasoft/kengine/v2/modules/logging"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	_ "github.com/khulnasoft/kengine/modules/logging"
 )
 
 func TestGlobalLogOptionSyntax(t *testing.T) {

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine/kenginetest"
 
-	_ "github.com/khulnasoft/kengine/v2/internal/testmocks"
+	_ "github.com/khulnasoft/kengine/internal/testmocks"
 )
 
 func TestKenginefileAdaptToJSON(t *testing.T) {

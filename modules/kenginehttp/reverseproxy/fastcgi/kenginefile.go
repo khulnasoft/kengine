@@ -19,14 +19,14 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/httpkenginefile"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp/fileserver"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp/reverseproxy"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp/rewrite"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/kengineconfig/httpkenginefile"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
+	"github.com/khulnasoft/kengine/modules/kenginehttp/fileserver"
+	"github.com/khulnasoft/kengine/modules/kenginehttp/reverseproxy"
+	"github.com/khulnasoft/kengine/modules/kenginehttp/rewrite"
 )
 
 func init() {

@@ -25,7 +25,7 @@ import (
 
 	"github.com/khulnasoft-lab/certmagic"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 type storVal struct {

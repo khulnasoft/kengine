@@ -29,8 +29,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kengineevents"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kengineevents"
 )
 
 func init() {

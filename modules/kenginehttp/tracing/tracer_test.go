@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func TestOpenTelemetryWrapper_newOpenTelemetryWrapper(t *testing.T) {

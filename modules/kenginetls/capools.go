@@ -14,10 +14,10 @@ import (
 
 	"github.com/khulnasoft-lab/certmagic"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	"github.com/khulnasoft/kengine/v2/modules/kenginepki"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/modules/kenginepki"
 )
 
 func init() {

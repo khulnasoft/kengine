@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func TestStaticResponseHandler(t *testing.T) {

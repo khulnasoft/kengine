@@ -34,10 +34,10 @@
 package main
 
 import (
-	kenginecmd "github.com/khulnasoft/kengine/v2/cmd"
+	kenginecmd "github.com/khulnasoft/kengine/cmd"
 
 	// plug in Kengine modules here
-	_ "github.com/khulnasoft/kengine/v2/modules/standard"
+	_ "github.com/khulnasoft/kengine/modules/standard"
 )
 
 func main() {

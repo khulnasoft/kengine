@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
 )
 
 func TestTracing_UnmarshalKenginefile(t *testing.T) {

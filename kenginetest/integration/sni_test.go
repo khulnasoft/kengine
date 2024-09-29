@@ -3,7 +3,7 @@ package integration
 import (
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine/kenginetest"
 )
 
 func TestDefaultSNI(t *testing.T) {

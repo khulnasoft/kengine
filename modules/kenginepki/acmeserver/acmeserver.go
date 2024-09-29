@@ -37,9 +37,9 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
-	"github.com/khulnasoft/kengine/v2/modules/kenginepki"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
+	"github.com/khulnasoft/kengine/modules/kenginepki"
 )
 
 func init() {

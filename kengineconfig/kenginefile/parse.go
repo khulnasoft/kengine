@@ -24,7 +24,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 // Parse parses the input just enough to group tokens, in

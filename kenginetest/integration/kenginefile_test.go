@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine/kenginetest"
 )
 
 func TestRespond(t *testing.T) {

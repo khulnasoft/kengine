@@ -22,7 +22,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 // Error is a convenient way for a Handler to populate the

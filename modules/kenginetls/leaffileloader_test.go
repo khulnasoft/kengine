@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func TestLeafFileLoader(t *testing.T) {

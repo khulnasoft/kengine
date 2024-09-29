@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 // ResponseMatcher is a type which can determine if an

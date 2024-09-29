@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kenginetest"
 	"github.com/mholt/acmez/v2"
 	"github.com/mholt/acmez/v2/acme"
 	smallstepacme "github.com/smallstep/certificates/acme"

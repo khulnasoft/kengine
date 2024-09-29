@@ -35,10 +35,10 @@ import (
 	"github.com/aryann/difflib"
 	"go.uber.org/zap"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	"github.com/khulnasoft/kengine/v2/internal"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/internal"
 )
 
 func cmdStart(fl Flags) (int, error) {

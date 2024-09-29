@@ -26,9 +26,9 @@ import (
 	"github.com/smallstep/truststore"
 	"github.com/spf13/cobra"
 
-	kenginecmd "github.com/khulnasoft/kengine/v2/cmd"
+	kenginecmd "github.com/khulnasoft/kengine/cmd"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {

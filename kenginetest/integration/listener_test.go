@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine/kenginetest"
 )
 
 func setupListenerWrapperTest(t *testing.T, handlerFunc http.HandlerFunc) *kenginetest.Tester {

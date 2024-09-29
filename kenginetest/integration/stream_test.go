@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine/kenginetest"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )

@@ -1,4 +1,4 @@
-module github.com/khulnasoft/kengine/v2
+module github.com/khulnasoft/kengine
 
 go 1.23.1
 

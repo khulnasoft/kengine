@@ -20,7 +20,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 func TestClientAuthenticationUnmarshalKenginefileWithDirectiveName(t *testing.T) {

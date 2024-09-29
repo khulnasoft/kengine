@@ -15,9 +15,9 @@
 package logging
 
 import (
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/httpkenginefile"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/kengineconfig/httpkenginefile"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
 )
 
 func init() {

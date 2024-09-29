@@ -28,9 +28,9 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kengineevents"
-	"github.com/khulnasoft/kengine/v2/modules/kenginetls"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kengineevents"
+	"github.com/khulnasoft/kengine/modules/kenginetls"
 )
 
 func init() {

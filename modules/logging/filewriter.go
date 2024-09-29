@@ -26,8 +26,8 @@ import (
 	"github.com/dustin/go-humanize"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 func init() {

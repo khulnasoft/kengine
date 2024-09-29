@@ -20,9 +20,9 @@ import (
 
 	"github.com/klauspost/compress/gzip"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp/encode"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/modules/kenginehttp/encode"
 )
 
 func init() {

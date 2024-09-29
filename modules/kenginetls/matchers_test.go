@@ -20,7 +20,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func TestServerNameMatcher(t *testing.T) {

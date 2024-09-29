@@ -24,11 +24,11 @@ import (
 
 	"github.com/aryann/difflib"
 
-	kenginecmd "github.com/khulnasoft/kengine/v2/cmd"
+	kenginecmd "github.com/khulnasoft/kengine/cmd"
 
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
+	"github.com/khulnasoft/kengine/kengineconfig"
 	// plug in Kengine modules here
-	_ "github.com/khulnasoft/kengine/v2/modules/standard"
+	_ "github.com/khulnasoft/kengine/modules/standard"
 )
 
 // Defaults store any configuration required to make the tests run

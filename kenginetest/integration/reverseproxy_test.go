@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine/kenginetest"
 )
 
 func TestSRVReverseProxy(t *testing.T) {

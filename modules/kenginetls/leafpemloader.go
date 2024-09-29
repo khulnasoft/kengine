@@ -18,7 +18,7 @@ import (
 	"crypto/x509"
 	"fmt"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {

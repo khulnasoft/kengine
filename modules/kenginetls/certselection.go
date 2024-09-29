@@ -24,7 +24,7 @@ import (
 
 	"github.com/khulnasoft-lab/certmagic"
 
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 // CustomCertSelectionPolicy represents a policy for selecting the certificate

@@ -35,7 +35,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 
-	"github.com/khulnasoft/kengine/v2/internal"
+	"github.com/khulnasoft/kengine/internal"
 )
 
 // NetworkAddress represents one or more network addresses.

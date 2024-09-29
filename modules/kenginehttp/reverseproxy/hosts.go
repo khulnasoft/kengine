@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"sync/atomic"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
 )
 
 // UpstreamPool is a collection of upstreams.

@@ -15,8 +15,8 @@
 package proxyprotocol
 
 import (
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 func init() {

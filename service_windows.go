@@ -20,7 +20,7 @@ import (
 
 	"golang.org/x/sys/windows/svc"
 
-	"github.com/khulnasoft/kengine/v2/notify"
+	"github.com/khulnasoft/kengine/notify"
 )
 
 func init() {

@@ -17,9 +17,9 @@ package acmeserver
 import (
 	"time"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/httpkenginefile"
-	"github.com/khulnasoft/kengine/v2/modules/kenginepki"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig/httpkenginefile"
+	"github.com/khulnasoft/kengine/modules/kenginepki"
 )
 
 func init() {

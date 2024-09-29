@@ -25,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 // SessionTicketService configures and manages TLS session tickets.

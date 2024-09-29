@@ -24,7 +24,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {

@@ -26,7 +26,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/exp/zapslog"
 
-	"github.com/khulnasoft/kengine/v2/internal/filesystems"
+	"github.com/khulnasoft/kengine/internal/filesystems"
 )
 
 // Context is a type which defines the lifetime of modules that

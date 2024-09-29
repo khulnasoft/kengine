@@ -21,7 +21,7 @@ import (
 
 	goproxy "github.com/pires/go-proxyproto"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 // ListenerWrapper provides PROXY protocol support to Kengine by implementing

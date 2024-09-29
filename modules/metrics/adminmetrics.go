@@ -17,7 +17,7 @@ package metrics
 import (
 	"net/http"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {

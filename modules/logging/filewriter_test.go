@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 func TestFileCreationMode(t *testing.T) {

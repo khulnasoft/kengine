@@ -24,9 +24,9 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
-	kenginecmd "github.com/khulnasoft/kengine/v2/cmd"
+	kenginecmd "github.com/khulnasoft/kengine/cmd"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {

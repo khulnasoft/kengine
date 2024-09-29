@@ -36,8 +36,8 @@ import (
 	"github.com/google/cel-go/common/types/ref"
 	"golang.org/x/net/idna"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
 )
 
 type (

@@ -23,7 +23,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {

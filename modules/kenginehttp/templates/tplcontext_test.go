@@ -29,7 +29,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
 )
 
 type handle struct{}

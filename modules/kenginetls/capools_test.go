@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
-	_ "github.com/khulnasoft/kengine/v2/modules/filestorage"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig/kenginefile"
+	_ "github.com/khulnasoft/kengine/modules/filestorage"
 )
 
 const (

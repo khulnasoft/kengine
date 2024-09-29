@@ -27,13 +27,13 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	kenginecmd "github.com/khulnasoft/kengine/v2/cmd"
+	kenginecmd "github.com/khulnasoft/kengine/cmd"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp"
-	"github.com/khulnasoft/kengine/v2/modules/kenginehttp/encode"
-	kenginetpl "github.com/khulnasoft/kengine/v2/modules/kenginehttp/templates"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/kengineconfig"
+	"github.com/khulnasoft/kengine/modules/kenginehttp"
+	"github.com/khulnasoft/kengine/modules/kenginehttp/encode"
+	kenginetpl "github.com/khulnasoft/kengine/modules/kenginehttp/templates"
 )
 
 func init() {

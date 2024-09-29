@@ -3,7 +3,7 @@ package httpkenginefile
 import (
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/modules/kenginetls"
+	"github.com/khulnasoft/kengine/modules/kenginetls"
 )
 
 func TestAutomationPolicyIsSubset(t *testing.T) {

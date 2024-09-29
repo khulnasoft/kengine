@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2/kenginetest"
+	"github.com/khulnasoft/kengine/kenginetest"
 )
 
 func TestBrowse(t *testing.T) {
