@@ -356,9 +356,9 @@ type Event struct {
 	origin kengine.Module
 }
 
-func (e Event) ID() uuid.UUID        { return e.id }
-func (e Event) Timestamp() time.Time { return e.ts }
-func (e Event) Name() string         { return e.name }
+func (e Event) ID() uuid.UUID          { return e.id }
+func (e Event) Timestamp() time.Time   { return e.ts }
+func (e Event) Name() string           { return e.name }
 func (e Event) Origin() kengine.Module { return e.origin }
 
 // CloudEvent exports event e as a structure that, when

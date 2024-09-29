@@ -447,8 +447,8 @@ func (mom logObjectMarshalerWrapper) MarshalLogObject(_ zapcore.ObjectEncoder) e
 
 // Interface guards
 var (
-	_ zapcore.Encoder                  = (*FilterEncoder)(nil)
-	_ zapcore.ObjectMarshaler          = (*logObjectMarshalerWrapper)(nil)
+	_ zapcore.Encoder                    = (*FilterEncoder)(nil)
+	_ zapcore.ObjectMarshaler            = (*logObjectMarshalerWrapper)(nil)
 	_ kenginefile.Unmarshaler            = (*FilterEncoder)(nil)
 	_ kengine.ConfiguresFormatterDefault = (*FilterEncoder)(nil)
 )

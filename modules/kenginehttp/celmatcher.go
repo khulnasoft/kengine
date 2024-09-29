@@ -376,6 +376,7 @@ type CELLibraryProducer interface {
 func CELMatcherImpl(macroName, funcName string, matcherDataTypes []*cel.Type, fac CELMatcherFactory) (cel.Library, error) {
 	requestType := cel.ObjectType("http.Request")
 	var macro parser.Macro
+
 	switch len(matcherDataTypes) {
 	case 1:
 		matcherDataType := matcherDataTypes[0]
@@ -390,20 +391,25 @@ func CELMatcherImpl(macroName, funcName string, matcherDataTypes []*cel.Type, fa
 			return nil, fmt.Errorf("unsupported matcher data type: %s", matcherDataType)
 		}
 	case 2:
-		if matcherDataTypes[0] == cel.StringType && matcherDataTypes[1] == cel.StringType {
+		// Ensure the slice length is at least 2
+		if len(matcherDataTypes) >= 2 && matcherDataTypes[0] == cel.StringType && matcherDataTypes[1] == cel.StringType {
 			macro = parser.NewGlobalMacro(macroName, 2, celMatcherStringListMacroExpander(funcName))
 			matcherDataTypes = []*cel.Type{cel.ListType(cel.StringType)}
 		} else {
 			return nil, fmt.Errorf("unsupported matcher data type: %s, %s", matcherDataTypes[0], matcherDataTypes[1])
 		}
 	case 3:
-		if matcherDataTypes[0] == cel.StringType && matcherDataTypes[1] == cel.StringType && matcherDataTypes[2] == cel.StringType {
+		// Ensure the slice length is at least 3
+		if len(matcherDataTypes) >= 3 && matcherDataTypes[0] == cel.StringType && matcherDataTypes[1] == cel.StringType && matcherDataTypes[2] == cel.StringType {
 			macro = parser.NewGlobalMacro(macroName, 3, celMatcherStringListMacroExpander(funcName))
 			matcherDataTypes = []*cel.Type{cel.ListType(cel.StringType)}
 		} else {
 			return nil, fmt.Errorf("unsupported matcher data type: %s, %s, %s", matcherDataTypes[0], matcherDataTypes[1], matcherDataTypes[2])
 		}
+	default:
+		return nil, fmt.Errorf("unsupported number of matcher data types: %d", len(matcherDataTypes))
 	}
+
 	envOptions := []cel.EnvOption{
 		cel.Macros(macro),
 		cel.Function(funcName,
@@ -413,8 +419,10 @@ func CELMatcherImpl(macroName, funcName string, matcherDataTypes []*cel.Type, fa
 	programOptions := []cel.ProgramOption{
 		cel.CustomDecorator(CELMatcherDecorator(funcName, fac)),
 	}
+
 	return NewMatcherCELLibrary(envOptions, programOptions), nil
 }
+
 
 // CELMatcherFactory converts a constant CEL value into a RequestMatcher.
 type CELMatcherFactory func(data ref.Val) (RequestMatcher, error)
@@ -717,8 +725,8 @@ const MatcherNameCtxKey = "matcher_name"
 // Interface guards
 var (
 	_ kengine.Provisioner     = (*MatchExpression)(nil)
-	_ RequestMatcher        = (*MatchExpression)(nil)
+	_ RequestMatcher          = (*MatchExpression)(nil)
 	_ kenginefile.Unmarshaler = (*MatchExpression)(nil)
-	_ json.Marshaler        = (*MatchExpression)(nil)
-	_ json.Unmarshaler      = (*MatchExpression)(nil)
+	_ json.Marshaler          = (*MatchExpression)(nil)
+	_ json.Unmarshaler        = (*MatchExpression)(nil)
 )

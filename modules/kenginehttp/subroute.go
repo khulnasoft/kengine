@@ -83,5 +83,5 @@ func (sr *Subroute) ServeHTTP(w http.ResponseWriter, r *http.Request, next Handl
 // Interface guards
 var (
 	_ kengine.Provisioner = (*Subroute)(nil)
-	_ MiddlewareHandler = (*Subroute)(nil)
+	_ MiddlewareHandler   = (*Subroute)(nil)
 )

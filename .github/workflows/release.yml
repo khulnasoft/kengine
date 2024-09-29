@@ -90,7 +90,7 @@ jobs:
       run: |
         
         # Import Matt Holt's key
-        curl 'https://github.com/mholt.gpg' | gpg --import
+        curl 'https://github.com/nxpkg.gpg' | gpg --import
 
         echo "Verifying the tag: ${{ steps.vars.outputs.version_tag }}"
         # tags are only accepted if signed by Matt's key

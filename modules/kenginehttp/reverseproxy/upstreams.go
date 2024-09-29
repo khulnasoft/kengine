@@ -547,7 +547,7 @@ var (
 // Interface guards
 var (
 	_ kengine.Provisioner = (*SRVUpstreams)(nil)
-	_ UpstreamSource    = (*SRVUpstreams)(nil)
+	_ UpstreamSource      = (*SRVUpstreams)(nil)
 	_ kengine.Provisioner = (*AUpstreams)(nil)
-	_ UpstreamSource    = (*AUpstreams)(nil)
+	_ UpstreamSource      = (*AUpstreams)(nil)
 )
