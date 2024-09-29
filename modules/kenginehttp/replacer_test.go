@@ -185,7 +185,7 @@ eqp31wM9il1n+guTNyxJd+FzVAH+hCZE5K+tCgVDdVFUlDEHHbS/wqb2PSIoouLV
 		},
 		{
 			get:    "http.request.tls.client.issuer",
-			expect: "CN=Caddy Test CA",
+			expect: "CN=Kengine Test CA",
 		},
 		{
 			get:    "http.request.tls.client.serial",

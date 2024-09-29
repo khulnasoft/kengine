@@ -91,7 +91,7 @@ var defaultGzipLevel = 5
 
 // Interface guards
 var (
-	_ encode.Encoding         = (*Gzip)(nil)
+	_ encode.Encoding       = (*Gzip)(nil)
 	_ kengine.Provisioner     = (*Gzip)(nil)
 	_ kengine.Validator       = (*Gzip)(nil)
 	_ kenginefile.Unmarshaler = (*Gzip)(nil)

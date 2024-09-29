@@ -258,6 +258,6 @@ const pushedLink = "http.handlers.push.pushed_link"
 var (
 	_ kengine.Provisioner           = (*Handler)(nil)
 	_ kenginehttp.MiddlewareHandler = (*Handler)(nil)
-	_ http.ResponseWriter           = (*linkPusher)(nil)
-	_ http.Pusher                   = (*linkPusher)(nil)
+	_ http.ResponseWriter         = (*linkPusher)(nil)
+	_ http.Pusher                 = (*linkPusher)(nil)
 )

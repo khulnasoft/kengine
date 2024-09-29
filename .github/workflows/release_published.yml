@@ -20,7 +20,7 @@ jobs:
     - name: Trigger event on khulnasoft/kengine-dist
       uses: peter-evans/repository-dispatch@v3
       with:
-        token: ${{ secrets.REPO_DISPATCH_TOKEN }}
+        token: ${{ secrets.ORG_REPO_TOKEN }}
         repository: khulnasoft/kengine-dist
         event-type: release-tagged
         client-payload: '{"tag": "${{ github.event.release.tag_name }}"}'
@@ -28,7 +28,7 @@ jobs:
     - name: Trigger event on khulnasoft/kengine-docker
       uses: peter-evans/repository-dispatch@v3
       with:
-        token: ${{ secrets.REPO_DISPATCH_TOKEN }}
+        token: ${{ secrets.ORG_REPO_TOKEN }}
         repository: khulnasoft/kengine-docker
         event-type: release-tagged
         client-payload: '{"tag": "${{ github.event.release.tag_name }}"}'

@@ -216,7 +216,7 @@ type (
 	// object keyed by matcher name.
 	MatchNot struct {
 		MatcherSetsRaw []kengine.ModuleMap `json:"-" kengine:"namespace=http.matchers"`
-		MatcherSets    []MatcherSet        `json:"-"`
+		MatcherSets    []MatcherSet      `json:"-"`
 	}
 )
 
@@ -1528,18 +1528,18 @@ const MatcherErrorVarKey = "matchers.error"
 
 // Interface guards
 var (
-	_ RequestMatcher      = (*MatchHost)(nil)
+	_ RequestMatcher    = (*MatchHost)(nil)
 	_ kengine.Provisioner = (*MatchHost)(nil)
-	_ RequestMatcher      = (*MatchPath)(nil)
-	_ RequestMatcher      = (*MatchPathRE)(nil)
+	_ RequestMatcher    = (*MatchPath)(nil)
+	_ RequestMatcher    = (*MatchPathRE)(nil)
 	_ kengine.Provisioner = (*MatchPathRE)(nil)
-	_ RequestMatcher      = (*MatchMethod)(nil)
-	_ RequestMatcher      = (*MatchQuery)(nil)
-	_ RequestMatcher      = (*MatchHeader)(nil)
-	_ RequestMatcher      = (*MatchHeaderRE)(nil)
+	_ RequestMatcher    = (*MatchMethod)(nil)
+	_ RequestMatcher    = (*MatchQuery)(nil)
+	_ RequestMatcher    = (*MatchHeader)(nil)
+	_ RequestMatcher    = (*MatchHeaderRE)(nil)
 	_ kengine.Provisioner = (*MatchHeaderRE)(nil)
-	_ RequestMatcher      = (*MatchProtocol)(nil)
-	_ RequestMatcher      = (*MatchNot)(nil)
+	_ RequestMatcher    = (*MatchProtocol)(nil)
+	_ RequestMatcher    = (*MatchNot)(nil)
 	_ kengine.Provisioner = (*MatchNot)(nil)
 	_ kengine.Provisioner = (*MatchRegexp)(nil)
 

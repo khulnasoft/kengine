@@ -35,8 +35,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/google/uuid" // Keep only one instance of uuid
 	"github.com/khulnasoft-lab/certmagic"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/khulnasoft/kengine/v2/internal/filesystems"

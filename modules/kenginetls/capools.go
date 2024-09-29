@@ -666,32 +666,32 @@ func (hcp HTTPCertPool) CertPool() *x509.CertPool {
 var (
 	_ kengine.Module          = (*InlineCAPool)(nil)
 	_ kengine.Provisioner     = (*InlineCAPool)(nil)
-	_ CA                      = (*InlineCAPool)(nil)
+	_ CA                    = (*InlineCAPool)(nil)
 	_ kenginefile.Unmarshaler = (*InlineCAPool)(nil)
 
 	_ kengine.Module          = (*FileCAPool)(nil)
 	_ kengine.Provisioner     = (*FileCAPool)(nil)
-	_ CA                      = (*FileCAPool)(nil)
+	_ CA                    = (*FileCAPool)(nil)
 	_ kenginefile.Unmarshaler = (*FileCAPool)(nil)
 
 	_ kengine.Module          = (*PKIRootCAPool)(nil)
 	_ kengine.Provisioner     = (*PKIRootCAPool)(nil)
-	_ CA                      = (*PKIRootCAPool)(nil)
+	_ CA                    = (*PKIRootCAPool)(nil)
 	_ kenginefile.Unmarshaler = (*PKIRootCAPool)(nil)
 
 	_ kengine.Module          = (*PKIIntermediateCAPool)(nil)
 	_ kengine.Provisioner     = (*PKIIntermediateCAPool)(nil)
-	_ CA                      = (*PKIIntermediateCAPool)(nil)
+	_ CA                    = (*PKIIntermediateCAPool)(nil)
 	_ kenginefile.Unmarshaler = (*PKIIntermediateCAPool)(nil)
 
 	_ kengine.Module          = (*StoragePool)(nil)
 	_ kengine.Provisioner     = (*StoragePool)(nil)
-	_ CA                      = (*StoragePool)(nil)
+	_ CA                    = (*StoragePool)(nil)
 	_ kenginefile.Unmarshaler = (*StoragePool)(nil)
 
 	_ kengine.Module          = (*HTTPCertPool)(nil)
 	_ kengine.Provisioner     = (*HTTPCertPool)(nil)
 	_ kengine.Validator       = (*HTTPCertPool)(nil)
-	_ CA                      = (*HTTPCertPool)(nil)
+	_ CA                    = (*HTTPCertPool)(nil)
 	_ kenginefile.Unmarshaler = (*HTTPCertPool)(nil)
 )

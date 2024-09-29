@@ -250,7 +250,7 @@ func (iss *ZeroSSLIssuer) UnmarshalKenginefile(d *kenginefile.Dispenser) error {
 
 // Interface guards
 var (
-	_ certmagic.Issuer    = (*ZeroSSLIssuer)(nil)
-	_ certmagic.Revoker   = (*ZeroSSLIssuer)(nil)
+	_ certmagic.Issuer  = (*ZeroSSLIssuer)(nil)
+	_ certmagic.Revoker = (*ZeroSSLIssuer)(nil)
 	_ kengine.Provisioner = (*ZeroSSLIssuer)(nil)
 )

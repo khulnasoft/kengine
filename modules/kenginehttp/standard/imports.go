@@ -3,6 +3,7 @@ package standard
 import (
 	// standard Kengine HTTP app modules
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp"
+	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/kengineauth"
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/encode"
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/encode/brotli"
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/encode/gzip"
@@ -10,7 +11,6 @@ import (
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/fileserver"
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/headers"
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/intercept"
-	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/kengineauth"
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/logging"
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/map"
 	_ "github.com/khulnasoft/kengine/v2/modules/kenginehttp/proxyprotocol"

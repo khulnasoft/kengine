@@ -457,6 +457,6 @@ func cmdRespond(fl kenginecmd.Flags) (int, error) {
 
 // Interface guards
 var (
-	_ MiddlewareHandler       = (*StaticResponse)(nil)
+	_ MiddlewareHandler     = (*StaticResponse)(nil)
 	_ kenginefile.Unmarshaler = (*StaticResponse)(nil)
 )

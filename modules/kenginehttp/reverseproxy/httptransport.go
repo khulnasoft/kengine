@@ -787,7 +787,7 @@ func decodeBase64DERCert(certStr string) (*x509.Certificate, error) {
 // Interface guards
 var (
 	_ kengine.Provisioner  = (*HTTPTransport)(nil)
-	_ http.RoundTripper    = (*HTTPTransport)(nil)
+	_ http.RoundTripper  = (*HTTPTransport)(nil)
 	_ kengine.CleanerUpper = (*HTTPTransport)(nil)
-	_ TLSTransport         = (*HTTPTransport)(nil)
+	_ TLSTransport       = (*HTTPTransport)(nil)
 )

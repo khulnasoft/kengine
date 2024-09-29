@@ -93,5 +93,5 @@ func (fl LeafFolderLoader) LoadLeafCertificates() ([]*x509.Certificate, error) {
 
 var (
 	_ LeafCertificateLoader = (*LeafFolderLoader)(nil)
-	_ kengine.Provisioner   = (*LeafFolderLoader)(nil)
+	_ kengine.Provisioner     = (*LeafFolderLoader)(nil)
 )

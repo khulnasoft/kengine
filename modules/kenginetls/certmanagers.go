@@ -198,11 +198,11 @@ func (hcg *HTTPCertGetter) UnmarshalKenginefile(d *kenginefile.Dispenser) error 
 
 // Interface guards
 var (
-	_ certmagic.Manager       = (*Tailscale)(nil)
+	_ certmagic.Manager     = (*Tailscale)(nil)
 	_ kengine.Provisioner     = (*Tailscale)(nil)
 	_ kenginefile.Unmarshaler = (*Tailscale)(nil)
 
-	_ certmagic.Manager       = (*HTTPCertGetter)(nil)
+	_ certmagic.Manager     = (*HTTPCertGetter)(nil)
 	_ kengine.Provisioner     = (*HTTPCertGetter)(nil)
 	_ kenginefile.Unmarshaler = (*HTTPCertGetter)(nil)
 )

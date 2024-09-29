@@ -29,8 +29,8 @@ import (
 	"go.uber.org/zap/zapcore"
 
 	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/internal"
 	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine/v2/internal"
 )
 
 // MatchRemoteIP matches requests by the remote IP address,
@@ -326,13 +326,13 @@ func matchIPByCidrZones(clientIP netip.Addr, zoneID string, cidrs []*netip.Prefi
 
 // Interface guards
 var (
-	_ RequestMatcher          = (*MatchRemoteIP)(nil)
+	_ RequestMatcher        = (*MatchRemoteIP)(nil)
 	_ kengine.Provisioner     = (*MatchRemoteIP)(nil)
 	_ kenginefile.Unmarshaler = (*MatchRemoteIP)(nil)
-	_ CELLibraryProducer      = (*MatchRemoteIP)(nil)
+	_ CELLibraryProducer    = (*MatchRemoteIP)(nil)
 
-	_ RequestMatcher          = (*MatchClientIP)(nil)
+	_ RequestMatcher        = (*MatchClientIP)(nil)
 	_ kengine.Provisioner     = (*MatchClientIP)(nil)
 	_ kenginefile.Unmarshaler = (*MatchClientIP)(nil)
-	_ CELLibraryProducer      = (*MatchClientIP)(nil)
+	_ CELLibraryProducer    = (*MatchClientIP)(nil)
 )

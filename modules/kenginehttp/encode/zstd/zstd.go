@@ -102,7 +102,7 @@ func (z Zstd) NewEncoder() encode.Encoder {
 
 // Interface guards
 var (
-	_ encode.Encoding         = (*Zstd)(nil)
+	_ encode.Encoding       = (*Zstd)(nil)
 	_ kenginefile.Unmarshaler = (*Zstd)(nil)
 	_ kengine.Provisioner     = (*Zstd)(nil)
 )

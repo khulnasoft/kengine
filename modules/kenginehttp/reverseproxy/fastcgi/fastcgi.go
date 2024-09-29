@@ -428,5 +428,5 @@ var (
 	_ zapcore.ObjectMarshaler = (*loggableEnv)(nil)
 
 	_ kengine.Provisioner = (*Transport)(nil)
-	_ http.RoundTripper   = (*Transport)(nil)
+	_ http.RoundTripper = (*Transport)(nil)
 )

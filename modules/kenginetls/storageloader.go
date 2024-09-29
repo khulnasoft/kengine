@@ -113,6 +113,6 @@ func (sl StorageLoader) LoadCertificates() ([]Certificate, error) {
 
 // Interface guard
 var (
-	_ CertificateLoader   = (*StorageLoader)(nil)
+	_ CertificateLoader = (*StorageLoader)(nil)
 	_ kengine.Provisioner = (*StorageLoader)(nil)
 )

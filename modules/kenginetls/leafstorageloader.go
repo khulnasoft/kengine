@@ -125,5 +125,5 @@ func convertPEMToDER(pemData []byte) ([]byte, error) {
 // Interface guard
 var (
 	_ LeafCertificateLoader = (*LeafStorageLoader)(nil)
-	_ kengine.Provisioner   = (*LeafStorageLoader)(nil)
+	_ kengine.Provisioner     = (*LeafStorageLoader)(nil)
 )
