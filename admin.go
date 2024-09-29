@@ -41,7 +41,8 @@ import (
 	"time"
 
 	"github.com/cespare/xxhash/v2"
-	"github.com/cespare/xxhash/v2"
+	// Only keep one import of xxhash
+	// "github.com/cespare/xxhash/v2" // <-- Remove the duplicate
 	"github.com/khulnasoft-lab/certmagic"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
