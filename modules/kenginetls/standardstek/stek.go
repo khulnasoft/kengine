@@ -1,44 +1,24 @@
-// Copyright 2015 Matthew Holt and The Kengine Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package standardstek
 
 import (
 	"log"
-	"runtime/debug"
 	"sync"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/modules/kenginetls"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginetls"
 )
 
 func init() {
-	kengine.RegisterModule(standardSTEKProvider{})
+	kengine.RegisterModule(kengine.Module{
+		Name: "tls.stek.standard",
+		New:  func() interface{} { return new(standardSTEKProvider) },
+	})
 }
 
 type standardSTEKProvider struct {
 	stekConfig *kenginetls.SessionTicketService
 	timer      *time.Timer
-}
-
-// KengineModule returns the Kengine module information.
-func (standardSTEKProvider) KengineModule() kengine.ModuleInfo {
-	return kengine.ModuleInfo{
-		ID:  "tls.stek.standard",
-		New: func() kengine.Module { return new(standardSTEKProvider) },
-	}
 }
 
 // Initialize sets the configuration for s and returns the starting keys.
@@ -82,11 +62,6 @@ func (s *standardSTEKProvider) Next(doneChan <-chan struct{}) <-chan [][32]byte 
 // rotate rotates keys on a regular basis, sending each updated set of
 // keys down keysChan, until doneChan is closed.
 func (s *standardSTEKProvider) rotate(doneChan <-chan struct{}, keysChan chan<- [][32]byte) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("[PANIC] standard STEK rotation: %v\n%s", err, debug.Stack())
-		}
-	}()
 	for {
 		select {
 		case now := <-s.timer.C:

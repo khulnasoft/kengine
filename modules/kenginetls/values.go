@@ -1,49 +1,31 @@
-// Copyright 2015 Matthew Holt and The Kengine Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package kenginetls
 
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 
-	"github.com/khulnasoft-lab/certmagic"
-	"github.com/klauspost/cpuid/v2"
+	"github.com/klauspost/cpuid"
 )
 
-// CipherSuiteNameSupported returns true if name is
-// a supported cipher suite.
-func CipherSuiteNameSupported(name string) bool {
-	return CipherSuiteID(name) != 0
-}
-
-// CipherSuiteID returns the ID of the cipher suite associated with
-// the given name, or 0 if the name is not recognized/supported.
-func CipherSuiteID(name string) uint16 {
-	for _, cs := range SupportedCipherSuites() {
-		if cs.Name == name {
-			return cs.ID
-		}
-	}
-	return 0
-}
-
-// SupportedCipherSuites returns a list of all the cipher suites
-// Kengine supports. The list is NOT ordered by security preference.
-func SupportedCipherSuites() []*tls.CipherSuite {
-	return tls.CipherSuites()
+// supportedCipherSuites is the unordered map of cipher suite
+// string names to their definition in crypto/tls.
+// TODO: might not be needed much longer, see:
+// https://github.com/golang/go/issues/30325
+var supportedCipherSuites = map[string]uint16{
+	"ECDHE_ECDSA_AES256_GCM_SHA384":      tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+	"ECDHE_RSA_AES256_GCM_SHA384":        tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+	"ECDHE_ECDSA_AES128_GCM_SHA256":      tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+	"ECDHE_RSA_AES128_GCM_SHA256":        tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+	"ECDHE_ECDSA_WITH_CHACHA20_POLY1305": tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+	"ECDHE_RSA_WITH_CHACHA20_POLY1305":   tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+	"ECDHE_RSA_AES256_CBC_SHA":           tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+	"ECDHE_RSA_AES128_CBC_SHA":           tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+	"ECDHE_ECDSA_AES256_CBC_SHA":         tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+	"ECDHE_ECDSA_AES128_CBC_SHA":         tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+	"RSA_AES256_CBC_SHA":                 tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+	"RSA_AES128_CBC_SHA":                 tls.TLS_RSA_WITH_AES_128_CBC_SHA,
+	"ECDHE_RSA_3DES_EDE_CBC_SHA":         tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+	"RSA_3DES_EDE_CBC_SHA":               tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
 }
 
 // defaultCipherSuites is the ordered list of all the cipher
@@ -73,31 +55,21 @@ var defaultCipherSuitesWithoutAESNI = []uint16{
 // getOptimalDefaultCipherSuites returns an appropriate cipher
 // suite to use depending on the hardware support for AES.
 //
-// See https://github.com/khulnasoft/kengine/issues/1674
+// See https://github.com/mholt/kengine/issues/1674
 func getOptimalDefaultCipherSuites() []uint16 {
-	if cpuid.CPU.Supports(cpuid.AESNI) {
+	if cpuid.CPU.AesNi() {
 		return defaultCipherSuitesWithAESNI
 	}
 	return defaultCipherSuitesWithoutAESNI
 }
 
-// SupportedCurves is the unordered map of supported curves.
+// supportedCurves is the unordered map of supported curves.
 // https://golang.org/pkg/crypto/tls/#CurveID
-var SupportedCurves = map[string]tls.CurveID{
-	"x25519":    tls.X25519,
-	"secp256r1": tls.CurveP256,
-	"secp384r1": tls.CurveP384,
-	"secp521r1": tls.CurveP521,
-}
-
-// supportedCertKeyTypes is all the key types that are supported
-// for certificates that are obtained through ACME.
-var supportedCertKeyTypes = map[string]certmagic.KeyType{
-	"rsa2048": certmagic.RSA2048,
-	"rsa4096": certmagic.RSA4096,
-	"p256":    certmagic.P256,
-	"p384":    certmagic.P384,
-	"ed25519": certmagic.ED25519,
+var supportedCurves = map[string]tls.CurveID{
+	"X25519": tls.X25519,
+	"P256":   tls.CurveP256,
+	"P384":   tls.CurveP384,
+	"P521":   tls.CurveP521,
 }
 
 // defaultCurves is the list of only the curves we want to use
@@ -108,29 +80,18 @@ var supportedCertKeyTypes = map[string]certmagic.KeyType{
 // implementation exists (e.g. P256). The latter ones can be
 // found here:
 // https://github.com/golang/go/tree/master/src/crypto/elliptic
-//
-// Temporily we ignore these default, to take advantage of X25519Kyber768
-// in Go's defaults (X25519Kyber768, X25519, P-256, P-384, P-521), which
-// isn't exported. See https://github.com/khulnasoft/kengine/issues/6540
-// nolint:unused
 var defaultCurves = []tls.CurveID{
 	tls.X25519,
 	tls.CurveP256,
 }
 
-// SupportedProtocols is a map of supported protocols.
-var SupportedProtocols = map[string]uint16{
-	"tls1.2": tls.VersionTLS12,
-	"tls1.3": tls.VersionTLS13,
-}
-
-// unsupportedProtocols is a map of unsupported protocols.
-// Used for logging only, not enforcement.
-var unsupportedProtocols = map[string]uint16{
-	//nolint:staticcheck
-	"ssl3.0": tls.VersionSSL30,
+// supportedProtocols is a map of supported protocols.
+// HTTP/2 only supports TLS 1.2 and higher.
+var supportedProtocols = map[string]uint16{
 	"tls1.0": tls.VersionTLS10,
 	"tls1.1": tls.VersionTLS11,
+	"tls1.2": tls.VersionTLS12,
+	"tls1.3": tls.VersionTLS13,
 }
 
 // publicKeyAlgorithms is the map of supported public key algorithms.
@@ -138,23 +99,4 @@ var publicKeyAlgorithms = map[string]x509.PublicKeyAlgorithm{
 	"rsa":   x509.RSA,
 	"dsa":   x509.DSA,
 	"ecdsa": x509.ECDSA,
-}
-
-// ProtocolName returns the standard name for the passed protocol version ID
-// (e.g.  "TLS1.3") or a fallback representation of the ID value if the version
-// is not supported.
-func ProtocolName(id uint16) string {
-	for k, v := range SupportedProtocols {
-		if v == id {
-			return k
-		}
-	}
-
-	for k, v := range unsupportedProtocols {
-		if v == id {
-			return k
-		}
-	}
-
-	return fmt.Sprintf("0x%04x", id)
 }

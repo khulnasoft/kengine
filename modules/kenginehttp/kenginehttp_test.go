@@ -1,205 +1,188 @@
 package kenginehttp
 
 import (
-	"net/url"
-	"path/filepath"
-	"runtime"
+	"reflect"
 	"testing"
 )
 
-func TestSanitizedPathJoin(t *testing.T) {
-	// For reference:
-	// %2e = .
-	// %2f = /
-	// %5c = \
+func TestSplitListenerAddr(t *testing.T) {
 	for i, tc := range []struct {
-		inputRoot     string
-		inputPath     string
-		expect        string
-		expectWindows string
+		input         string
+		expectNetwork string
+		expectHost    string
+		expectPort    string
+		expectErr     bool
 	}{
 		{
-			inputPath: "",
-			expect:    ".",
+			input:     "",
+			expectErr: true,
 		},
 		{
-			inputPath: "/",
-			expect:    ".",
+			input:     "foo",
+			expectErr: true,
 		},
 		{
-			// fileserver.MatchFile passes an inputPath of "//" for some try_files values.
-			// See https://github.com/khulnasoft/kengine/issues/6352
-			inputPath: "//",
-			expect:    filepath.FromSlash("./"),
+			input:      "foo:1234",
+			expectHost: "foo",
+			expectPort: "1234",
 		},
 		{
-			inputPath: "/foo",
-			expect:    "foo",
+			input:      "foo:1234-5678",
+			expectHost: "foo",
+			expectPort: "1234-5678",
 		},
 		{
-			inputPath: "/foo/",
-			expect:    filepath.FromSlash("foo/"),
+			input:         "udp/foo:1234",
+			expectNetwork: "udp",
+			expectHost:    "foo",
+			expectPort:    "1234",
 		},
 		{
-			inputPath: "/foo/bar",
-			expect:    filepath.FromSlash("foo/bar"),
+			input:         "tcp6/foo:1234-5678",
+			expectNetwork: "tcp6",
+			expectHost:    "foo",
+			expectPort:    "1234-5678",
 		},
 		{
-			inputRoot: "/a",
-			inputPath: "/foo/bar",
-			expect:    filepath.FromSlash("/a/foo/bar"),
-		},
-		{
-			inputPath: "/foo/../bar",
-			expect:    "bar",
-		},
-		{
-			inputRoot: "/a/b",
-			inputPath: "/foo/../bar",
-			expect:    filepath.FromSlash("/a/b/bar"),
-		},
-		{
-			inputRoot: "/a/b",
-			inputPath: "/..%2fbar",
-			expect:    filepath.FromSlash("/a/b/bar"),
-		},
-		{
-			inputRoot: "/a/b",
-			inputPath: "/%2e%2e%2fbar",
-			expect:    filepath.FromSlash("/a/b/bar"),
-		},
-		{
-			// inputPath fails the IsLocal test so only the root is returned,
-			// but with a trailing slash since one was included in inputPath
-			inputRoot: "/a/b",
-			inputPath: "/%2e%2e%2f%2e%2e%2f",
-			expect:    filepath.FromSlash("/a/b/"),
-		},
-		{
-			inputRoot: "/a/b",
-			inputPath: "/foo%2fbar",
-			expect:    filepath.FromSlash("/a/b/foo/bar"),
-		},
-		{
-			inputRoot: "/a/b",
-			inputPath: "/foo%252fbar",
-			expect:    filepath.FromSlash("/a/b/foo%2fbar"),
-		},
-		{
-			inputRoot: "C:\\www",
-			inputPath: "/foo/bar",
-			expect:    filepath.Join("C:\\www", "foo", "bar"),
-		},
-		{
-			inputRoot:     "C:\\www",
-			inputPath:     "/D:\\foo\\bar",
-			expect:        filepath.Join("C:\\www", "D:\\foo\\bar"),
-			expectWindows: "C:\\www", // inputPath fails IsLocal on Windows
-		},
-		{
-			inputRoot:     `C:\www`,
-			inputPath:     `/..\windows\win.ini`,
-			expect:        `C:\www/..\windows\win.ini`,
-			expectWindows: `C:\www`,
-		},
-		{
-			inputRoot:     `C:\www`,
-			inputPath:     `/..\..\..\..\..\..\..\..\..\..\windows\win.ini`,
-			expect:        `C:\www/..\..\..\..\..\..\..\..\..\..\windows\win.ini`,
-			expectWindows: `C:\www`,
-		},
-		{
-			inputRoot:     `C:\www`,
-			inputPath:     `/..%5cwindows%5cwin.ini`,
-			expect:        `C:\www/..\windows\win.ini`,
-			expectWindows: `C:\www`,
-		},
-		{
-			inputRoot:     `C:\www`,
-			inputPath:     `/..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5cwindows%5cwin.ini`,
-			expect:        `C:\www/..\..\..\..\..\..\..\..\..\..\windows\win.ini`,
-			expectWindows: `C:\www`,
-		},
-		{
-			// https://github.com/golang/go/issues/56336#issuecomment-1416214885
-			inputRoot: "root",
-			inputPath: "/a/b/../../c",
-			expect:    filepath.FromSlash("root/c"),
+			input:         "udp/",
+			expectNetwork: "udp",
+			expectErr:     true,
 		},
 	} {
-		// we don't *need* to use an actual parsed URL, but it
-		// adds some authenticity to the tests since real-world
-		// values will be coming in from URLs; thus, the test
-		// corpus can contain paths as encoded by clients, which
-		// more closely emulates the actual attack vector
-		u, err := url.Parse("http://test:9999" + tc.inputPath)
-		if err != nil {
-			t.Fatalf("Test %d: invalid URL: %v", i, err)
+		actualNetwork, actualHost, actualPort, err := splitListenAddr(tc.input)
+		if tc.expectErr && err == nil {
+			t.Errorf("Test %d: Expected error but got: %v", i, err)
 		}
-		actual := SanitizedPathJoin(tc.inputRoot, u.Path)
-		if runtime.GOOS == "windows" && tc.expectWindows != "" {
-			tc.expect = tc.expectWindows
+		if !tc.expectErr && err != nil {
+			t.Errorf("Test %d: Expected no error but got: %v", i, err)
 		}
-		if actual != tc.expect {
-			t.Errorf("Test %d: SanitizedPathJoin('%s', '%s') =>  '%s' (expected '%s')",
-				i, tc.inputRoot, tc.inputPath, actual, tc.expect)
+		if actualNetwork != tc.expectNetwork {
+			t.Errorf("Test %d: Expected network '%s' but got '%s'", i, tc.expectNetwork, actualNetwork)
+		}
+		if actualHost != tc.expectHost {
+			t.Errorf("Test %d: Expected host '%s' but got '%s'", i, tc.expectHost, actualHost)
+		}
+		if actualPort != tc.expectPort {
+			t.Errorf("Test %d: Expected port '%s' but got '%s'", i, tc.expectPort, actualPort)
 		}
 	}
 }
 
-func TestCleanPath(t *testing.T) {
+func TestJoinListenerAddr(t *testing.T) {
 	for i, tc := range []struct {
-		input        string
-		mergeSlashes bool
-		expect       string
+		network, host, port string
+		expect              string
 	}{
 		{
-			input:  "/foo",
-			expect: "/foo",
+			network: "", host: "", port: "",
+			expect: "",
 		},
 		{
-			input:  "/foo/",
-			expect: "/foo/",
+			network: "tcp", host: "", port: "",
+			expect: "tcp/",
 		},
 		{
-			input:  "//foo",
-			expect: "//foo",
+			network: "", host: "foo", port: "",
+			expect: "foo",
 		},
 		{
-			input:        "//foo",
-			mergeSlashes: true,
-			expect:       "/foo",
+			network: "", host: "", port: "1234",
+			expect: ":1234",
 		},
 		{
-			input:        "/foo//bar/",
-			mergeSlashes: true,
-			expect:       "/foo/bar/",
+			network: "", host: "", port: "1234-5678",
+			expect: ":1234-5678",
 		},
 		{
-			input:  "/foo/./.././bar",
-			expect: "/bar",
+			network: "", host: "foo", port: "1234",
+			expect: "foo:1234",
 		},
 		{
-			input:  "/foo//./..//./bar",
-			expect: "/foo//bar",
+			network: "udp", host: "foo", port: "1234",
+			expect: "udp/foo:1234",
 		},
 		{
-			input:  "/foo///./..//./bar",
-			expect: "/foo///bar",
-		},
-		{
-			input:  "/foo///./..//.",
-			expect: "/foo//",
-		},
-		{
-			input:  "/foo//./bar",
-			expect: "/foo//bar",
+			network: "udp", host: "", port: "1234",
+			expect: "udp/:1234",
 		},
 	} {
-		actual := CleanPath(tc.input, tc.mergeSlashes)
+		actual := joinListenAddr(tc.network, tc.host, tc.port)
 		if actual != tc.expect {
-			t.Errorf("Test %d [input='%s' mergeSlashes=%t]: Got '%s', expected '%s'",
-				i, tc.input, tc.mergeSlashes, actual, tc.expect)
+			t.Errorf("Test %d: Expected '%s' but got '%s'", i, tc.expect, actual)
+		}
+	}
+}
+
+func TestParseListenerAddr(t *testing.T) {
+	for i, tc := range []struct {
+		input         string
+		expectNetwork string
+		expectAddrs   []string
+		expectErr     bool
+	}{
+		{
+			input:         "",
+			expectNetwork: "tcp",
+			expectErr:     true,
+		},
+		{
+			input:         ":",
+			expectNetwork: "tcp",
+			expectErr:     true,
+		},
+		{
+			input:         ":1234",
+			expectNetwork: "tcp",
+			expectAddrs:   []string{":1234"},
+		},
+		{
+			input:         "tcp/:1234",
+			expectNetwork: "tcp",
+			expectAddrs:   []string{":1234"},
+		},
+		{
+			input:         "tcp6/:1234",
+			expectNetwork: "tcp6",
+			expectAddrs:   []string{":1234"},
+		},
+		{
+			input:         "tcp4/localhost:1234",
+			expectNetwork: "tcp4",
+			expectAddrs:   []string{"localhost:1234"},
+		},
+		{
+			input:         "unix/localhost:1234-1236",
+			expectNetwork: "unix",
+			expectAddrs:   []string{"localhost:1234", "localhost:1235", "localhost:1236"},
+		},
+		{
+			input:         "localhost:1234-1234",
+			expectNetwork: "tcp",
+			expectAddrs:   []string{"localhost:1234"},
+		},
+		{
+			input:         "localhost:2-1",
+			expectNetwork: "tcp",
+			expectErr:     true,
+		},
+		{
+			input:         "localhost:0",
+			expectNetwork: "tcp",
+			expectAddrs:   []string{"localhost:0"},
+		},
+	} {
+		actualNetwork, actualAddrs, err := parseListenAddr(tc.input)
+		if tc.expectErr && err == nil {
+			t.Errorf("Test %d: Expected error but got: %v", i, err)
+		}
+		if !tc.expectErr && err != nil {
+			t.Errorf("Test %d: Expected no error but got: %v", i, err)
+		}
+		if actualNetwork != tc.expectNetwork {
+			t.Errorf("Test %d: Expected network '%s' but got '%s'", i, tc.expectNetwork, actualNetwork)
+		}
+		if !reflect.DeepEqual(tc.expectAddrs, actualAddrs) {
+			t.Errorf("Test %d: Expected addresses %v but got %v", i, tc.expectAddrs, actualAddrs)
 		}
 	}
 }

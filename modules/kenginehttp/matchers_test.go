@@ -1,17 +1,3 @@
-// Copyright 2015 Matthew Holt and The Kengine Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package kenginehttp
 
 import (
@@ -20,19 +6,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"runtime"
 	"testing"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func TestHostMatcher(t *testing.T) {
-	err := os.Setenv("GO_BENCHMARK_DOMAIN", "localhost")
-	if err != nil {
-		t.Errorf("error while setting up environment: %v", err)
-	}
-
 	for i, tc := range []struct {
 		match  MatchHost
 		input  string
@@ -46,16 +25,6 @@ func TestHostMatcher(t *testing.T) {
 		{
 			match:  MatchHost{"example.com"},
 			input:  "example.com",
-			expect: true,
-		},
-		{
-			match:  MatchHost{"EXAMPLE.COM"},
-			input:  "example.com",
-			expect: true,
-		},
-		{
-			match:  MatchHost{"example.com"},
-			input:  "EXAMPLE.COM",
 			expect: true,
 		},
 		{
@@ -79,19 +48,9 @@ func TestHostMatcher(t *testing.T) {
 			expect: false,
 		},
 		{
-			match:  MatchHost{"éxàmplê.com"},
-			input:  "xn--xmpl-0na6cm.com",
-			expect: true,
-		},
-		{
 			match:  MatchHost{"*.example.com"},
 			input:  "example.com",
 			expect: false,
-		},
-		{
-			match:  MatchHost{"*.example.com"},
-			input:  "SUB.EXAMPLE.COM",
-			expect: true,
 		},
 		{
 			match:  MatchHost{"*.example.com"},
@@ -128,36 +87,8 @@ func TestHostMatcher(t *testing.T) {
 			input:  "sub.foo.example.net",
 			expect: false,
 		},
-		{
-			match:  MatchHost{"www.*.*"},
-			input:  "www.example.com",
-			expect: true,
-		},
-		{
-			match:  MatchHost{"example.com"},
-			input:  "example.com:5555",
-			expect: true,
-		},
-		{
-			match:  MatchHost{"{env.GO_BENCHMARK_DOMAIN}"},
-			input:  "localhost",
-			expect: true,
-		},
-		{
-			match:  MatchHost{"{env.GO_NONEXISTENT}"},
-			input:  "localhost",
-			expect: false,
-		},
 	} {
 		req := &http.Request{Host: tc.input}
-		repl := kengine.NewReplacer()
-		ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-		req = req.WithContext(ctx)
-
-		if err := tc.match.Provision(kengine.Context{}); err != nil {
-			t.Errorf("Test %d %v: provisioning failed: %v", i, tc.match, err)
-		}
-
 		actual := tc.match.Match(req)
 		if actual != tc.expect {
 			t.Errorf("Test %d %v: Expected %t, got %t for '%s'", i, tc.match, tc.expect, actual, tc.input)
@@ -168,10 +99,9 @@ func TestHostMatcher(t *testing.T) {
 
 func TestPathMatcher(t *testing.T) {
 	for i, tc := range []struct {
-		match        MatchPath // not URI-encoded because not parsing from a URI
-		input        string    // should be valid URI encoding (escaped) since it will become part of a request
-		expect       bool
-		provisionErr bool
+		match  MatchPath
+		input  string
+		expect bool
 	}{
 		{
 			match:  MatchPath{},
@@ -199,28 +129,13 @@ func TestPathMatcher(t *testing.T) {
 			expect: false,
 		},
 		{
-			match:  MatchPath{"/foo/bar/"},
-			input:  "/foo/bar/",
-			expect: true,
-		},
-		{
 			match:  MatchPath{"/foo/bar/", "/other"},
 			input:  "/other/",
-			expect: false,
-		},
-		{
-			match:  MatchPath{"/foo/bar/", "/other"},
-			input:  "/other",
 			expect: true,
 		},
 		{
 			match:  MatchPath{"*.ext"},
-			input:  "/foo/bar.ext",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"*.php"},
-			input:  "/index.PHP",
+			input:  "foo.ext",
 			expect: true,
 		},
 		{
@@ -238,222 +153,13 @@ func TestPathMatcher(t *testing.T) {
 			input:  "/foo/bar/bam",
 			expect: false,
 		},
-		{
-			match:  MatchPath{"*substring*"},
-			input:  "/foo/substring/bar.txt",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo"},
-			input:  "/foo/bar",
-			expect: false,
-		},
-		{
-			match:  MatchPath{"/foo"},
-			input:  "/foo/bar",
-			expect: false,
-		},
-		{
-			match:  MatchPath{"/foo"},
-			input:  "/FOO",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo*"},
-			input:  "/FOOOO",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo/bar.txt"},
-			input:  "/foo/BAR.txt",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo*"},
-			input:  "//foo/bar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo"},
-			input:  "//foo",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"//foo"},
-			input:  "/foo",
-			expect: false,
-		},
-		{
-			match:  MatchPath{"//foo"},
-			input:  "//foo",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo//*"},
-			input:  "/foo//bar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo//*"},
-			input:  "/foo/%2Fbar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo/%2F*"},
-			input:  "/foo/%2Fbar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo/%2F*"},
-			input:  "/foo//bar",
-			expect: false,
-		},
-		{
-			match:  MatchPath{"/foo//bar"},
-			input:  "/foo//bar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo/*//bar"},
-			input:  "/foo///bar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo/%*//bar"},
-			input:  "/foo///bar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo/%*//bar"},
-			input:  "/foo//%2Fbar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo*"},
-			input:  "/%2F/foo",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"*"},
-			input:  "/",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"*"},
-			input:  "/foo/bar",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"**"},
-			input:  "/",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"**"},
-			input:  "/foo/bar",
-			expect: true,
-		},
-		// notice these next three test cases are the same normalized path but are written differently
-		{
-			match:  MatchPath{"/%25@.txt"},
-			input:  "/%25@.txt",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/%25@.txt"},
-			input:  "/%25%40.txt",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/%25%40.txt"},
-			input:  "/%25%40.txt",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/bands/*/*"},
-			input:  "/bands/AC%2FDC/T.N.T",
-			expect: false, // because * operates in normalized space
-		},
-		{
-			match:  MatchPath{"/bands/%*/%*"},
-			input:  "/bands/AC%2FDC/T.N.T",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/bands/%*/%*"},
-			input:  "/bands/AC/DC/T.N.T",
-			expect: false,
-		},
-		{
-			match:  MatchPath{"/bands/%*"},
-			input:  "/bands/AC/DC",
-			expect: false, // not a suffix match
-		},
-		{
-			match:  MatchPath{"/bands/%*"},
-			input:  "/bands/AC%2FDC",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo%2fbar/baz"},
-			input:  "/foo%2Fbar/baz",
-			expect: true,
-		},
-		{
-			match:  MatchPath{"/foo%2fbar/baz"},
-			input:  "/foo/bar/baz",
-			expect: false,
-		},
-		{
-			match:  MatchPath{"/foo/bar/baz"},
-			input:  "/foo%2fbar/baz",
-			expect: true,
-		},
 	} {
-		err := tc.match.Provision(kengine.Context{})
-		if err == nil && tc.provisionErr {
-			t.Errorf("Test %d %v: Expected error provisioning, but there was no error", i, tc.match)
-		}
-		if err != nil && !tc.provisionErr {
-			t.Errorf("Test %d %v: Expected no error provisioning, but there was an error: %v", i, tc.match, err)
-		}
-		if tc.provisionErr {
-			continue // if it's not supposed to provision properly, pointless to test it
-		}
-
-		u, err := url.ParseRequestURI(tc.input)
-		if err != nil {
-			t.Fatalf("Test %d (%v): Invalid request URI (should be rejected by Go's HTTP server): %v", i, tc.input, err)
-		}
-		req := &http.Request{URL: u}
-		repl := kengine.NewReplacer()
-		ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-		req = req.WithContext(ctx)
-
+		req := &http.Request{URL: &url.URL{Path: tc.input}}
 		actual := tc.match.Match(req)
 		if actual != tc.expect {
 			t.Errorf("Test %d %v: Expected %t, got %t for '%s'", i, tc.match, tc.expect, actual, tc.input)
 			continue
 		}
-	}
-}
-
-func TestPathMatcherWindows(t *testing.T) {
-	// only Windows has this bug where it will ignore
-	// trailing dots and spaces in a filename
-	if runtime.GOOS != "windows" {
-		return
-	}
-
-	req := &http.Request{URL: &url.URL{Path: "/index.php . . .."}}
-	repl := kengine.NewReplacer()
-	ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-	req = req.WithContext(ctx)
-
-	match := MatchPath{"*.php"}
-	matched := match.Match(req)
-	if !matched {
-		t.Errorf("Expected to match; should ignore trailing dots and spaces")
 	}
 }
 
@@ -475,28 +181,13 @@ func TestPathREMatcher(t *testing.T) {
 			expect: true,
 		},
 		{
-			match:  MatchPathRE{MatchRegexp{Pattern: "^/foo"}},
+			match:  MatchPathRE{MatchRegexp{Pattern: "/foo"}},
 			input:  "/foo",
 			expect: true,
 		},
 		{
-			match:  MatchPathRE{MatchRegexp{Pattern: "^/foo"}},
+			match:  MatchPathRE{MatchRegexp{Pattern: "/foo"}},
 			input:  "/foo/",
-			expect: true,
-		},
-		{
-			match:  MatchPathRE{MatchRegexp{Pattern: "^/foo"}},
-			input:  "//foo",
-			expect: true,
-		},
-		{
-			match:  MatchPathRE{MatchRegexp{Pattern: "^/foo"}},
-			input:  "//foo/",
-			expect: true,
-		},
-		{
-			match:  MatchPathRE{MatchRegexp{Pattern: "^/foo"}},
-			input:  "/%2F/foo/",
 			expect: true,
 		},
 		{
@@ -521,19 +212,9 @@ func TestPathREMatcher(t *testing.T) {
 			expect:     true,
 			expectRepl: map[string]string{"name.myparam": "bar"},
 		},
-		{
-			match:  MatchPathRE{MatchRegexp{Pattern: "^/%@.txt"}},
-			input:  "/%25@.txt",
-			expect: true,
-		},
-		{
-			match:  MatchPathRE{MatchRegexp{Pattern: "^/%25@.txt"}},
-			input:  "/%25@.txt",
-			expect: false,
-		},
 	} {
 		// compile the regexp and validate its name
-		err := tc.match.Provision(kengine.Context{})
+		err := tc.match.Provision()
 		if err != nil {
 			t.Errorf("Test %d %v: Provisioning: %v", i, tc.match, err)
 			continue
@@ -545,11 +226,7 @@ func TestPathREMatcher(t *testing.T) {
 		}
 
 		// set up the fake request and its Replacer
-		u, err := url.ParseRequestURI(tc.input)
-		if err != nil {
-			t.Fatalf("Test %d: Bad input URI: %v", i, err)
-		}
-		req := &http.Request{URL: u}
+		req := &http.Request{URL: &url.URL{Path: tc.input}}
 		repl := kengine.NewReplacer()
 		ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
 		req = req.WithContext(ctx)
@@ -563,10 +240,10 @@ func TestPathREMatcher(t *testing.T) {
 		}
 
 		for key, expectVal := range tc.expectRepl {
-			placeholder := fmt.Sprintf("{http.regexp.%s}", key)
+			placeholder := fmt.Sprintf("{http.matchers.path_regexp.%s}", key)
 			actualVal := repl.ReplaceAll(placeholder, "<empty>")
 			if actualVal != expectVal {
-				t.Errorf("Test %d [%v]: Expected placeholder {http.regexp.%s} to be '%s' but got '%s'",
+				t.Errorf("Test %d [%v]: Expected placeholder {http.matchers.path_regexp.%s} to be '%s' but got '%s'",
 					i, tc.match.Pattern, key, expectVal, actualVal)
 				continue
 			}
@@ -575,13 +252,9 @@ func TestPathREMatcher(t *testing.T) {
 }
 
 func TestHeaderMatcher(t *testing.T) {
-	repl := kengine.NewReplacer()
-	repl.Set("a", "foobar")
-
 	for i, tc := range []struct {
 		match  MatchHeader
 		input  http.Header // make sure these are canonical cased (std lib will do that in a real request)
-		host   string
 		expect bool
 	}{
 		{
@@ -624,200 +297,8 @@ func TestHeaderMatcher(t *testing.T) {
 			input:  http.Header{"Field1": []string{"foo"}, "Field2": []string{"kapow"}},
 			expect: false,
 		},
-		{
-			match:  MatchHeader{"field1": []string{"*"}},
-			input:  http.Header{"Field1": []string{"foo"}},
-			expect: true,
-		},
-		{
-			match:  MatchHeader{"field1": []string{"*"}},
-			input:  http.Header{"Field2": []string{"foo"}},
-			expect: false,
-		},
-		{
-			match:  MatchHeader{"Field1": []string{"foo*"}},
-			input:  http.Header{"Field1": []string{"foo"}},
-			expect: true,
-		},
-		{
-			match:  MatchHeader{"Field1": []string{"foo*"}},
-			input:  http.Header{"Field1": []string{"asdf", "foobar"}},
-			expect: true,
-		},
-		{
-			match:  MatchHeader{"Field1": []string{"*bar"}},
-			input:  http.Header{"Field1": []string{"asdf", "foobar"}},
-			expect: true,
-		},
-		{
-			match:  MatchHeader{"host": []string{"localhost"}},
-			input:  http.Header{},
-			host:   "localhost",
-			expect: true,
-		},
-		{
-			match:  MatchHeader{"host": []string{"localhost"}},
-			input:  http.Header{},
-			host:   "khulnasoft.com",
-			expect: false,
-		},
-		{
-			match:  MatchHeader{"Must-Not-Exist": nil},
-			input:  http.Header{},
-			expect: true,
-		},
-		{
-			match:  MatchHeader{"Must-Not-Exist": nil},
-			input:  http.Header{"Must-Not-Exist": []string{"do not match"}},
-			expect: false,
-		},
-		{
-			match:  MatchHeader{"Foo": []string{"{a}"}},
-			input:  http.Header{"Foo": []string{"foobar"}},
-			expect: true,
-		},
-		{
-			match:  MatchHeader{"Foo": []string{"{a}"}},
-			input:  http.Header{"Foo": []string{"asdf"}},
-			expect: false,
-		},
-		{
-			match:  MatchHeader{"Foo": []string{"{a}*"}},
-			input:  http.Header{"Foo": []string{"foobar-baz"}},
-			expect: true,
-		},
 	} {
-		req := &http.Request{Header: tc.input, Host: tc.host}
-		ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-		req = req.WithContext(ctx)
-
-		actual := tc.match.Match(req)
-		if actual != tc.expect {
-			t.Errorf("Test %d %v: Expected %t, got %t for '%s'", i, tc.match, tc.expect, actual, tc.input)
-			continue
-		}
-	}
-}
-
-func TestQueryMatcher(t *testing.T) {
-	for i, tc := range []struct {
-		scenario string
-		match    MatchQuery
-		input    string
-		expect   bool
-	}{
-		{
-			scenario: "non match against a specific value",
-			match:    MatchQuery{"debug": []string{"1"}},
-			input:    "/",
-			expect:   false,
-		},
-		{
-			scenario: "match against a specific value",
-			match:    MatchQuery{"debug": []string{"1"}},
-			input:    "/?debug=1",
-			expect:   true,
-		},
-		{
-			scenario: "match against a wildcard",
-			match:    MatchQuery{"debug": []string{"*"}},
-			input:    "/?debug=something",
-			expect:   true,
-		},
-		{
-			scenario: "non match against a wildcarded",
-			match:    MatchQuery{"debug": []string{"*"}},
-			input:    "/?other=something",
-			expect:   false,
-		},
-		{
-			scenario: "match against an empty value",
-			match:    MatchQuery{"debug": []string{""}},
-			input:    "/?debug",
-			expect:   true,
-		},
-		{
-			scenario: "non match against an empty value",
-			match:    MatchQuery{"debug": []string{""}},
-			input:    "/?someparam",
-			expect:   false,
-		},
-		{
-			scenario: "empty matcher value should match empty query",
-			match:    MatchQuery{},
-			input:    "/?",
-			expect:   true,
-		},
-		{
-			scenario: "nil matcher value should NOT match a non-empty query",
-			match:    MatchQuery{},
-			input:    "/?foo=bar",
-			expect:   false,
-		},
-		{
-			scenario: "non-nil matcher should NOT match an empty query",
-			match:    MatchQuery{"": nil},
-			input:    "/?",
-			expect:   false,
-		},
-		{
-			scenario: "match against a placeholder value",
-			match:    MatchQuery{"debug": []string{"{http.vars.debug}"}},
-			input:    "/?debug=1",
-			expect:   true,
-		},
-		{
-			scenario: "match against a placeholder key",
-			match:    MatchQuery{"{http.vars.key}": []string{"1"}},
-			input:    "/?somekey=1",
-			expect:   true,
-		},
-		{
-			scenario: "do not match when not all query params are present",
-			match:    MatchQuery{"debug": []string{"1"}, "foo": []string{"bar"}},
-			input:    "/?debug=1",
-			expect:   false,
-		},
-		{
-			scenario: "match when all query params are present",
-			match:    MatchQuery{"debug": []string{"1"}, "foo": []string{"bar"}},
-			input:    "/?debug=1&foo=bar",
-			expect:   true,
-		},
-		{
-			scenario: "do not match when the value of a query param does not match",
-			match:    MatchQuery{"debug": []string{"1"}, "foo": []string{"bar"}},
-			input:    "/?debug=2&foo=bar",
-			expect:   false,
-		},
-		{
-			scenario: "do not match when all the values the query params do not match",
-			match:    MatchQuery{"debug": []string{"1"}, "foo": []string{"bar"}},
-			input:    "/?debug=2&foo=baz",
-			expect:   false,
-		},
-		{
-			scenario: "match against two values for the same key",
-			match:    MatchQuery{"debug": []string{"1"}},
-			input:    "/?debug=1&debug=2",
-			expect:   true,
-		},
-		{
-			scenario: "match against two values for the same key",
-			match:    MatchQuery{"debug": []string{"2", "1"}},
-			input:    "/?debug=2&debug=1",
-			expect:   true,
-		},
-	} {
-
-		u, _ := url.Parse(tc.input)
-
-		req := &http.Request{URL: u}
-		repl := kengine.NewReplacer()
-		ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-		repl.Set("http.vars.debug", "1")
-		repl.Set("http.vars.key", "somekey")
-		req = req.WithContext(ctx)
+		req := &http.Request{Header: tc.input}
 		actual := tc.match.Match(req)
 		if actual != tc.expect {
 			t.Errorf("Test %d %v: Expected %t, got %t for '%s'", i, tc.match, tc.expect, actual, tc.input)
@@ -830,7 +311,6 @@ func TestHeaderREMatcher(t *testing.T) {
 	for i, tc := range []struct {
 		match      MatchHeaderRE
 		input      http.Header // make sure these are canonical cased (std lib will do that in a real request)
-		host       string
 		expect     bool
 		expectRepl map[string]string
 	}{
@@ -850,26 +330,9 @@ func TestHeaderREMatcher(t *testing.T) {
 			expect:     true,
 			expectRepl: map[string]string{"name.1": "bar"},
 		},
-		{
-			match:  MatchHeaderRE{"Field": &MatchRegexp{Pattern: "^foo.*$", Name: "name"}},
-			input:  http.Header{"Field": []string{"barfoo", "foobar"}},
-			expect: true,
-		},
-		{
-			match:  MatchHeaderRE{"host": &MatchRegexp{Pattern: "^localhost$", Name: "name"}},
-			input:  http.Header{},
-			host:   "localhost",
-			expect: true,
-		},
-		{
-			match:  MatchHeaderRE{"host": &MatchRegexp{Pattern: "^local$", Name: "name"}},
-			input:  http.Header{},
-			host:   "localhost",
-			expect: false,
-		},
 	} {
 		// compile the regexp and validate its name
-		err := tc.match.Provision(kengine.Context{})
+		err := tc.match.Provision()
 		if err != nil {
 			t.Errorf("Test %d %v: Provisioning: %v", i, tc.match, err)
 			continue
@@ -881,7 +344,7 @@ func TestHeaderREMatcher(t *testing.T) {
 		}
 
 		// set up the fake request and its Replacer
-		req := &http.Request{Header: tc.input, URL: new(url.URL), Host: tc.host}
+		req := &http.Request{Header: tc.input, URL: new(url.URL)}
 		repl := kengine.NewReplacer()
 		ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
 		req = req.WithContext(ctx)
@@ -895,10 +358,10 @@ func TestHeaderREMatcher(t *testing.T) {
 		}
 
 		for key, expectVal := range tc.expectRepl {
-			placeholder := fmt.Sprintf("{http.regexp.%s}", key)
+			placeholder := fmt.Sprintf("{http.matchers.header_regexp.%s}", key)
 			actualVal := repl.ReplaceAll(placeholder, "<empty>")
 			if actualVal != expectVal {
-				t.Errorf("Test %d [%v]: Expected placeholder {http.regexp.%s} to be '%s' but got '%s'",
+				t.Errorf("Test %d [%v]: Expected placeholder {http.matchers.header_regexp.%s} to be '%s' but got '%s'",
 					i, tc.match, key, expectVal, actualVal)
 				continue
 			}
@@ -906,287 +369,133 @@ func TestHeaderREMatcher(t *testing.T) {
 	}
 }
 
-func BenchmarkHeaderREMatcher(b *testing.B) {
-	i := 0
-	match := MatchHeaderRE{"Field": &MatchRegexp{Pattern: "^foo(.*)$", Name: "name"}}
-	input := http.Header{"Field": []string{"foobar"}}
-	var host string
-	err := match.Provision(kengine.Context{})
-	if err != nil {
-		b.Errorf("Test %d %v: Provisioning: %v", i, match, err)
-	}
-	err = match.Validate()
-	if err != nil {
-		b.Errorf("Test %d %v: Validating: %v", i, match, err)
-	}
-
-	// set up the fake request and its Replacer
-	req := &http.Request{Header: input, URL: new(url.URL), Host: host}
-	repl := kengine.NewReplacer()
-	ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-	req = req.WithContext(ctx)
-	addHTTPVarsToReplacer(repl, req, httptest.NewRecorder())
-	for run := 0; run < b.N; run++ {
-		match.Match(req)
-	}
-}
-
-func TestVarREMatcher(t *testing.T) {
+func TestResponseMatcher(t *testing.T) {
 	for i, tc := range []struct {
-		desc       string
-		match      MatchVarsRE
-		input      VarsMiddleware
-		expect     bool
-		expectRepl map[string]string
+		require ResponseMatcher
+		status  int
+		hdr     http.Header // make sure these are canonical cased (std lib will do that in a real request)
+		expect  bool
 	}{
 		{
-			desc:   "match static value within var set by the VarsMiddleware succeeds",
-			match:  MatchVarsRE{"Var1": &MatchRegexp{Pattern: "foo"}},
-			input:  VarsMiddleware{"Var1": "here is foo val"},
+			require: ResponseMatcher{},
+			status:  200,
+			expect:  true,
+		},
+		{
+			require: ResponseMatcher{
+				StatusCode: []int{200},
+			},
+			status: 200,
 			expect: true,
 		},
 		{
-			desc:   "value set by VarsMiddleware not satisfying regexp matcher fails to match",
-			match:  MatchVarsRE{"Var1": &MatchRegexp{Pattern: "$foo^"}},
-			input:  VarsMiddleware{"Var1": "foobar"},
+			require: ResponseMatcher{
+				StatusCode: []int{2},
+			},
+			status: 200,
+			expect: true,
+		},
+		{
+			require: ResponseMatcher{
+				StatusCode: []int{201},
+			},
+			status: 200,
 			expect: false,
 		},
 		{
-			desc:       "successfully matched value is captured and its placeholder is added to replacer",
-			match:      MatchVarsRE{"Var1": &MatchRegexp{Pattern: "^foo(.*)$", Name: "name"}},
-			input:      VarsMiddleware{"Var1": "foobar"},
-			expect:     true,
-			expectRepl: map[string]string{"name.1": "bar"},
+			require: ResponseMatcher{
+				StatusCode: []int{2},
+			},
+			status: 301,
+			expect: false,
 		},
 		{
-			desc:   "matching against a value of standard variables succeeds",
-			match:  MatchVarsRE{"{http.request.method}": &MatchRegexp{Pattern: "^G.[tT]$"}},
-			input:  VarsMiddleware{},
+			require: ResponseMatcher{
+				StatusCode: []int{3},
+			},
+			status: 301,
 			expect: true,
 		},
 		{
-			desc:   "matching against value of var set by the VarsMiddleware and referenced by its placeholder succeeds",
-			match:  MatchVarsRE{"{http.vars.Var1}": &MatchRegexp{Pattern: "[vV]ar[0-9]"}},
-			input:  VarsMiddleware{"Var1": "var1Value"},
+			require: ResponseMatcher{
+				StatusCode: []int{3},
+			},
+			status: 399,
+			expect: true,
+		},
+		{
+			require: ResponseMatcher{
+				StatusCode: []int{3},
+			},
+			status: 400,
+			expect: false,
+		},
+		{
+			require: ResponseMatcher{
+				StatusCode: []int{3, 4},
+			},
+			status: 400,
+			expect: true,
+		},
+		{
+			require: ResponseMatcher{
+				StatusCode: []int{3, 401},
+			},
+			status: 401,
+			expect: true,
+		},
+		{
+			require: ResponseMatcher{
+				Headers: http.Header{
+					"Foo": []string{"bar"},
+				},
+			},
+			hdr:    http.Header{"Foo": []string{"bar"}},
+			expect: true,
+		},
+		{
+			require: ResponseMatcher{
+				Headers: http.Header{
+					"Foo2": []string{"bar"},
+				},
+			},
+			hdr:    http.Header{"Foo": []string{"bar"}},
+			expect: false,
+		},
+		{
+			require: ResponseMatcher{
+				Headers: http.Header{
+					"Foo": []string{"bar", "baz"},
+				},
+			},
+			hdr:    http.Header{"Foo": []string{"baz"}},
+			expect: true,
+		},
+		{
+			require: ResponseMatcher{
+				Headers: http.Header{
+					"Foo":  []string{"bar"},
+					"Foo2": []string{"baz"},
+				},
+			},
+			hdr:    http.Header{"Foo": []string{"baz"}},
+			expect: false,
+		},
+		{
+			require: ResponseMatcher{
+				Headers: http.Header{
+					"Foo":  []string{"bar"},
+					"Foo2": []string{"baz"},
+				},
+			},
+			hdr:    http.Header{"Foo": []string{"bar"}, "Foo2": []string{"baz"}},
 			expect: true,
 		},
 	} {
-		i := i   // capture range value
-		tc := tc // capture range value
-		t.Run(tc.desc, func(t *testing.T) {
-			t.Parallel()
-			// compile the regexp and validate its name
-			err := tc.match.Provision(kengine.Context{})
-			if err != nil {
-				t.Errorf("Test %d %v: Provisioning: %v", i, tc.match, err)
-				return
-			}
-			err = tc.match.Validate()
-			if err != nil {
-				t.Errorf("Test %d %v: Validating: %v", i, tc.match, err)
-				return
-			}
-
-			// set up the fake request and its Replacer
-			req := &http.Request{URL: new(url.URL), Method: http.MethodGet}
-			repl := kengine.NewReplacer()
-			ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-			ctx = context.WithValue(ctx, VarsCtxKey, make(map[string]any))
-			req = req.WithContext(ctx)
-
-			addHTTPVarsToReplacer(repl, req, httptest.NewRecorder())
-
-			tc.input.ServeHTTP(httptest.NewRecorder(), req, emptyHandler)
-
-			actual := tc.match.Match(req)
-			if actual != tc.expect {
-				t.Errorf("Test %d [%v]: Expected %t, got %t for input '%s'",
-					i, tc.match, tc.expect, actual, tc.input)
-				return
-			}
-
-			for key, expectVal := range tc.expectRepl {
-				placeholder := fmt.Sprintf("{http.regexp.%s}", key)
-				actualVal := repl.ReplaceAll(placeholder, "<empty>")
-				if actualVal != expectVal {
-					t.Errorf("Test %d [%v]: Expected placeholder {http.regexp.%s} to be '%s' but got '%s'",
-						i, tc.match, key, expectVal, actualVal)
-					return
-				}
-			}
-		})
-	}
-}
-
-func TestNotMatcher(t *testing.T) {
-	for i, tc := range []struct {
-		host, path string
-		match      MatchNot
-		expect     bool
-	}{
-		{
-			host: "example.com", path: "/",
-			match:  MatchNot{},
-			expect: true,
-		},
-		{
-			host: "example.com", path: "/foo",
-			match: MatchNot{
-				MatcherSets: []MatcherSet{
-					{
-						MatchPath{"/foo"},
-					},
-				},
-			},
-			expect: false,
-		},
-		{
-			host: "example.com", path: "/bar",
-			match: MatchNot{
-				MatcherSets: []MatcherSet{
-					{
-						MatchPath{"/foo"},
-					},
-				},
-			},
-			expect: true,
-		},
-		{
-			host: "example.com", path: "/bar",
-			match: MatchNot{
-				MatcherSets: []MatcherSet{
-					{
-						MatchPath{"/foo"},
-					},
-					{
-						MatchHost{"example.com"},
-					},
-				},
-			},
-			expect: false,
-		},
-		{
-			host: "example.com", path: "/bar",
-			match: MatchNot{
-				MatcherSets: []MatcherSet{
-					{
-						MatchPath{"/bar"},
-					},
-					{
-						MatchHost{"example.com"},
-					},
-				},
-			},
-			expect: false,
-		},
-		{
-			host: "example.com", path: "/foo",
-			match: MatchNot{
-				MatcherSets: []MatcherSet{
-					{
-						MatchPath{"/bar"},
-					},
-					{
-						MatchHost{"sub.example.com"},
-					},
-				},
-			},
-			expect: true,
-		},
-		{
-			host: "example.com", path: "/foo",
-			match: MatchNot{
-				MatcherSets: []MatcherSet{
-					{
-						MatchPath{"/foo"},
-						MatchHost{"example.com"},
-					},
-				},
-			},
-			expect: false,
-		},
-		{
-			host: "example.com", path: "/foo",
-			match: MatchNot{
-				MatcherSets: []MatcherSet{
-					{
-						MatchPath{"/bar"},
-						MatchHost{"example.com"},
-					},
-				},
-			},
-			expect: true,
-		},
-	} {
-		req := &http.Request{Host: tc.host, URL: &url.URL{Path: tc.path}}
-		repl := kengine.NewReplacer()
-		ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-		req = req.WithContext(ctx)
-
-		actual := tc.match.Match(req)
+		actual := tc.require.Match(tc.status, tc.hdr)
 		if actual != tc.expect {
-			t.Errorf("Test %d %+v: Expected %t, got %t for: host=%s path=%s'", i, tc.match, tc.expect, actual, tc.host, tc.path)
+			t.Errorf("Test %d %v: Expected %t, got %t for HTTP %d %v", i, tc.require, tc.expect, actual, tc.status, tc.hdr)
 			continue
 		}
-	}
-}
-
-func BenchmarkLargeHostMatcher(b *testing.B) {
-	// this benchmark simulates a large host matcher (thousands of entries) where each
-	// value is an exact hostname (not a placeholder or wildcard) - compare the results
-	// of this with and without the binary search (comment out the various fast path
-	// sections in Match) to conduct experiments
-
-	const n = 10000
-	lastHost := fmt.Sprintf("%d.example.com", n-1)
-	req := &http.Request{Host: lastHost}
-	repl := kengine.NewReplacer()
-	ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-	req = req.WithContext(ctx)
-
-	matcher := make(MatchHost, n)
-	for i := 0; i < n; i++ {
-		matcher[i] = fmt.Sprintf("%d.example.com", i)
-	}
-	err := matcher.Provision(kengine.Context{})
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		matcher.Match(req)
-	}
-}
-
-func BenchmarkHostMatcherWithoutPlaceholder(b *testing.B) {
-	req := &http.Request{Host: "localhost"}
-	repl := kengine.NewReplacer()
-	ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-	req = req.WithContext(ctx)
-
-	match := MatchHost{"localhost"}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		match.Match(req)
-	}
-}
-
-func BenchmarkHostMatcherWithPlaceholder(b *testing.B) {
-	err := os.Setenv("GO_BENCHMARK_DOMAIN", "localhost")
-	if err != nil {
-		b.Errorf("error while setting up environment: %v", err)
-	}
-
-	req := &http.Request{Host: "localhost"}
-	repl := kengine.NewReplacer()
-	ctx := context.WithValue(req.Context(), kengine.ReplacerCtxKey, repl)
-	req = req.WithContext(ctx)
-	match := MatchHost{"{env.GO_BENCHMARK_DOMAIN}"}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		match.Match(req)
 	}
 }

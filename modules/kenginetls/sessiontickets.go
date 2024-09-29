@@ -1,17 +1,3 @@
-// Copyright 2015 Matthew Holt and The Kengine Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package kenginetls
 
 import (
@@ -20,32 +6,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
-	"runtime/debug"
 	"sync"
 	"time"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 // SessionTicketService configures and manages TLS session tickets.
 type SessionTicketService struct {
-	// KeySource is the method by which Kengine produces or obtains
-	// TLS session ticket keys (STEKs). By default, Kengine generates
-	// them internally using a secure pseudorandom source.
-	KeySource json.RawMessage `json:"key_source,omitempty" kengine:"namespace=tls.stek inline_key=provider"`
-
-	// How often Kengine rotates STEKs. Default: 12h.
+	KeySource        json.RawMessage `json:"key_source,omitempty"`
 	RotationInterval kengine.Duration `json:"rotation_interval,omitempty"`
-
-	// The maximum number of keys to keep in rotation. Default: 4.
-	MaxKeys int `json:"max_keys,omitempty"`
-
-	// Disables STEK rotation.
-	DisableRotation bool `json:"disable_rotation,omitempty"`
-
-	// Disables TLS session resumption by tickets.
-	Disabled bool `json:"disabled,omitempty"`
+	MaxKeys          int             `json:"max_keys,omitempty"`
+	DisableRotation  bool            `json:"disable_rotation,omitempty"`
+	Disabled         bool            `json:"disabled,omitempty"`
 
 	keySource   STEKProvider
 	configs     map[*tls.Config]struct{}
@@ -70,11 +43,12 @@ func (s *SessionTicketService) provision(ctx kengine.Context) error {
 	}
 
 	// load the STEK module, which will provide keys
-	val, err := ctx.LoadModule(s, "KeySource")
+	val, err := ctx.LoadModuleInline("provider", "tls.stek", s.KeySource)
 	if err != nil {
 		return fmt.Errorf("loading TLS session ticket ephemeral keys provider module: %s", err)
 	}
 	s.keySource = val.(STEKProvider)
+	s.KeySource = nil // allow GC to deallocate - TODO: Does this help?
 
 	// if session tickets or just rotation are
 	// disabled, no need to start service
@@ -120,12 +94,6 @@ func (s *SessionTicketService) start() error {
 // the keys whenever new ones are sent. It reads
 // from keysChan until s.stop() is called.
 func (s *SessionTicketService) stayUpdated() {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("[PANIC] session ticket service: %v\n%s", err, debug.Stack())
-		}
-	}()
-
 	// this call is essential when Initialize()
 	// returns without error, because the stop
 	// channel is the only way the key source

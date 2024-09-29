@@ -1,17 +1,3 @@
-// Copyright 2015 Matthew Holt and The Kengine Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package kenginetls
 
 import (
@@ -19,48 +5,32 @@ import (
 	"crypto/tls"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/khulnasoft/kengine/v2"
+	"github.com/khulnasoft/kengine"
 )
 
 func init() {
-	kengine.RegisterModule(FolderLoader{})
+	kengine.RegisterModule(kengine.Module{
+		Name: "tls.certificates.load_folders",
+		New:  func() interface{} { return folderLoader{} },
+	})
 }
 
-// FolderLoader loads certificates and their associated keys from disk
+// folderLoader loads certificates and their associated keys from disk
 // by recursively walking the specified directories, looking for PEM
 // files which contain both a certificate and a key.
-type FolderLoader []string
-
-// KengineModule returns the Kengine module information.
-func (FolderLoader) KengineModule() kengine.ModuleInfo {
-	return kengine.ModuleInfo{
-		ID:  "tls.certificates.load_folders",
-		New: func() kengine.Module { return new(FolderLoader) },
-	}
-}
-
-// Provision implements kengine.Provisioner.
-func (fl FolderLoader) Provision(ctx kengine.Context) error {
-	repl, ok := ctx.Value(kengine.ReplacerCtxKey).(*kengine.Replacer)
-	if !ok {
-		repl = kengine.NewReplacer()
-	}
-	for k, path := range fl {
-		fl[k] = repl.ReplaceKnown(path, "")
-	}
-	return nil
-}
+type folderLoader []string
 
 // LoadCertificates loads all the certificates+keys in the directories
 // listed in fl from all files ending with .pem. This method of loading
 // certificates expects the certificate and key to be bundled into the
 // same file.
-func (fl FolderLoader) LoadCertificates() ([]Certificate, error) {
-	var certs []Certificate
+func (fl folderLoader) LoadCertificates() ([]tls.Certificate, error) {
+	var certs []tls.Certificate
 	for _, dir := range fl {
 		err := filepath.Walk(dir, func(fpath string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -73,16 +43,12 @@ func (fl FolderLoader) LoadCertificates() ([]Certificate, error) {
 				return nil
 			}
 
-			bundle, err := os.ReadFile(fpath)
+			cert, err := x509CertFromCertAndKeyPEMFile(fpath)
 			if err != nil {
 				return err
 			}
-			cert, err := tlsCertFromCertAndKeyPEMBundle(bundle)
-			if err != nil {
-				return fmt.Errorf("%s: %w", fpath, err)
-			}
 
-			certs = append(certs, Certificate{Certificate: cert})
+			certs = append(certs, cert)
 
 			return nil
 		})
@@ -93,7 +59,12 @@ func (fl FolderLoader) LoadCertificates() ([]Certificate, error) {
 	return certs, nil
 }
 
-func tlsCertFromCertAndKeyPEMBundle(bundle []byte) (tls.Certificate, error) {
+func x509CertFromCertAndKeyPEMFile(fpath string) (tls.Certificate, error) {
+	bundle, err := ioutil.ReadFile(fpath)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
 	certBuilder, keyBuilder := new(bytes.Buffer), new(bytes.Buffer)
 	var foundKey bool // use only the first key in the file
 
@@ -107,64 +78,45 @@ func tlsCertFromCertAndKeyPEMBundle(bundle []byte) (tls.Certificate, error) {
 
 		if derBlock.Type == "CERTIFICATE" {
 			// Re-encode certificate as PEM, appending to certificate chain
-			if err := pem.Encode(certBuilder, derBlock); err != nil {
-				return tls.Certificate{}, err
-			}
+			pem.Encode(certBuilder, derBlock)
 		} else if derBlock.Type == "EC PARAMETERS" {
 			// EC keys generated from openssl can be composed of two blocks:
 			// parameters and key (parameter block should come first)
 			if !foundKey {
 				// Encode parameters
-				if err := pem.Encode(keyBuilder, derBlock); err != nil {
-					return tls.Certificate{}, err
-				}
+				pem.Encode(keyBuilder, derBlock)
 
 				// Key must immediately follow
 				derBlock, bundle = pem.Decode(bundle)
 				if derBlock == nil || derBlock.Type != "EC PRIVATE KEY" {
-					return tls.Certificate{}, fmt.Errorf("expected elliptic private key to immediately follow EC parameters")
+					return tls.Certificate{}, fmt.Errorf("%s: expected elliptic private key to immediately follow EC parameters", fpath)
 				}
-				if err := pem.Encode(keyBuilder, derBlock); err != nil {
-					return tls.Certificate{}, err
-				}
+				pem.Encode(keyBuilder, derBlock)
 				foundKey = true
 			}
 		} else if derBlock.Type == "PRIVATE KEY" || strings.HasSuffix(derBlock.Type, " PRIVATE KEY") {
 			// RSA key
 			if !foundKey {
-				if err := pem.Encode(keyBuilder, derBlock); err != nil {
-					return tls.Certificate{}, err
-				}
+				pem.Encode(keyBuilder, derBlock)
 				foundKey = true
 			}
 		} else {
-			return tls.Certificate{}, fmt.Errorf("unrecognized PEM block type: %s", derBlock.Type)
+			return tls.Certificate{}, fmt.Errorf("%s: unrecognized PEM block type: %s", fpath, derBlock.Type)
 		}
 	}
 
 	certPEMBytes, keyPEMBytes := certBuilder.Bytes(), keyBuilder.Bytes()
 	if len(certPEMBytes) == 0 {
-		return tls.Certificate{}, fmt.Errorf("failed to parse PEM data")
+		return tls.Certificate{}, fmt.Errorf("%s: failed to parse PEM data", fpath)
 	}
 	if len(keyPEMBytes) == 0 {
-		return tls.Certificate{}, fmt.Errorf("no private key block found")
-	}
-
-	// if the start of the key file looks like an encrypted private key,
-	// reject it with a helpful error message
-	if strings.HasPrefix(string(keyPEMBytes[:40]), "ENCRYPTED") {
-		return tls.Certificate{}, fmt.Errorf("encrypted private keys are not supported; please decrypt the key first")
+		return tls.Certificate{}, fmt.Errorf("%s: no private key block found", fpath)
 	}
 
 	cert, err := tls.X509KeyPair(certPEMBytes, keyPEMBytes)
 	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("making X509 key pair: %v", err)
+		return tls.Certificate{}, fmt.Errorf("%s: making X509 key pair: %v", fpath, err)
 	}
 
 	return cert, nil
 }
-
-var (
-	_ CertificateLoader = (FolderLoader)(nil)
-	_ kengine.Provisioner = (FolderLoader)(nil)
-)

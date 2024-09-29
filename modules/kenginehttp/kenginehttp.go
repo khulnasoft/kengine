@@ -1,51 +1,382 @@
-// Copyright 2015 Matthew Holt and The Kengine Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package kenginehttp
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
+	"context"
+	"crypto/tls"
+	"fmt"
+	"log"
+	weakrand "math/rand"
 	"net"
 	"net/http"
-	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/khulnasoft/kengine/v2"
-	"github.com/khulnasoft/kengine/v2/kengineconfig/kenginefile"
+	"github.com/khulnasoft/kengine"
+	"github.com/khulnasoft/kengine/modules/kenginetls"
+	"github.com/mholt/certmagic"
 )
 
 func init() {
-	kengine.RegisterModule(tlsPlaceholderWrapper{})
+	weakrand.Seed(time.Now().UnixNano())
+
+	err := kengine.RegisterModule(kengine.Module{
+		Name: "http",
+		New:  func() interface{} { return new(App) },
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
+// App is the HTTP app for Kengine.
+type App struct {
+	HTTPPort    int                `json:"http_port,omitempty"`
+	HTTPSPort   int                `json:"https_port,omitempty"`
+	GracePeriod kengine.Duration    `json:"grace_period,omitempty"`
+	Servers     map[string]*Server `json:"servers,omitempty"`
+
+	servers []*http.Server
+
+	ctx kengine.Context
+}
+
+// Provision sets up the app.
+func (app *App) Provision(ctx kengine.Context) error {
+	app.ctx = ctx
+
+	repl := kengine.NewReplacer()
+
+	for _, srv := range app.Servers {
+		// TODO: Test this function to ensure these replacements are performed
+		for i := range srv.Listen {
+			srv.Listen[i] = repl.ReplaceAll(srv.Listen[i], "")
+		}
+		if srv.Routes != nil {
+			err := srv.Routes.Provision(ctx)
+			if err != nil {
+				return fmt.Errorf("setting up server routes: %v", err)
+			}
+		}
+		if srv.Errors != nil {
+			err := srv.Errors.Routes.Provision(ctx)
+			if err != nil {
+				return fmt.Errorf("setting up server error handling routes: %v", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// Validate ensures the app's configuration is valid.
+func (app *App) Validate() error {
+	// each server must use distinct listener addresses
+	lnAddrs := make(map[string]string)
+	for srvName, srv := range app.Servers {
+		for _, addr := range srv.Listen {
+			netw, expanded, err := parseListenAddr(addr)
+			if err != nil {
+				return fmt.Errorf("invalid listener address '%s': %v", addr, err)
+			}
+			for _, a := range expanded {
+				if sn, ok := lnAddrs[netw+a]; ok {
+					return fmt.Errorf("listener address repeated: %s (already claimed by server '%s')", a, sn)
+				}
+				lnAddrs[netw+a] = srvName
+			}
+		}
+	}
+
+	// each server's max rehandle value must be valid
+	for srvName, srv := range app.Servers {
+		if srv.MaxRehandles < 0 {
+			return fmt.Errorf("%s: invalid max_rehandles value: %d", srvName, srv.MaxRehandles)
+		}
+	}
+
+	return nil
+}
+
+// Start runs the app. It sets up automatic HTTPS if enabled.
+func (app *App) Start() error {
+	err := app.automaticHTTPS()
+	if err != nil {
+		return fmt.Errorf("enabling automatic HTTPS: %v", err)
+	}
+
+	for srvName, srv := range app.Servers {
+		s := &http.Server{
+			ReadTimeout:       time.Duration(srv.ReadTimeout),
+			ReadHeaderTimeout: time.Duration(srv.ReadHeaderTimeout),
+			WriteTimeout:      time.Duration(srv.WriteTimeout),
+			IdleTimeout:       time.Duration(srv.IdleTimeout),
+			MaxHeaderBytes:    srv.MaxHeaderBytes,
+			Handler:           srv,
+		}
+
+		for _, lnAddr := range srv.Listen {
+			network, addrs, err := parseListenAddr(lnAddr)
+			if err != nil {
+				return fmt.Errorf("%s: parsing listen address '%s': %v", srvName, lnAddr, err)
+			}
+			for _, addr := range addrs {
+				ln, err := kengine.Listen(network, addr)
+				if err != nil {
+					return fmt.Errorf("%s: listening on %s: %v", network, addr, err)
+				}
+
+				// enable HTTP/2 (and support for solving the
+				// TLS-ALPN ACME challenge) by default
+				for _, pol := range srv.TLSConnPolicies {
+					if len(pol.ALPN) == 0 {
+						pol.ALPN = append(pol.ALPN, defaultALPN...)
+					}
+				}
+
+				// enable TLS
+				httpPort := app.HTTPPort
+				if httpPort == 0 {
+					httpPort = DefaultHTTPPort
+				}
+				_, port, _ := net.SplitHostPort(addr)
+				if len(srv.TLSConnPolicies) > 0 && port != strconv.Itoa(httpPort) {
+					tlsCfg, err := srv.TLSConnPolicies.TLSConfig(app.ctx)
+					if err != nil {
+						return fmt.Errorf("%s/%s: making TLS configuration: %v", network, addr, err)
+					}
+					ln = tls.NewListener(ln, tlsCfg)
+				}
+
+				go s.Serve(ln)
+				app.servers = append(app.servers, s)
+			}
+		}
+	}
+
+	return nil
+}
+
+// Stop gracefully shuts down the HTTP server.
+func (app *App) Stop() error {
+	ctx := context.Background()
+	if app.GracePeriod > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(app.GracePeriod))
+		defer cancel()
+	}
+	for _, s := range app.servers {
+		err := s.Shutdown(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (app *App) automaticHTTPS() error {
+	tlsAppIface, err := app.ctx.App("tls")
+	if err != nil {
+		return fmt.Errorf("getting tls app: %v", err)
+	}
+	tlsApp := tlsAppIface.(*kenginetls.TLS)
+
+	lnAddrMap := make(map[string]struct{})
+	var redirRoutes RouteList
+
+	for srvName, srv := range app.Servers {
+		srv.tlsApp = tlsApp
+
+		if srv.DisableAutoHTTPS {
+			continue
+		}
+
+		// skip if all listeners use the HTTP port
+		if !srv.listenersUseAnyPortOtherThan(app.HTTPPort) {
+			continue
+		}
+
+		// find all qualifying domain names, de-duplicated
+		domainSet := make(map[string]struct{})
+		for _, route := range srv.Routes {
+			for _, matcherSet := range route.matcherSets {
+				for _, m := range matcherSet {
+					if hm, ok := m.(*MatchHost); ok {
+						for _, d := range *hm {
+							if !certmagic.HostQualifies(d) {
+								continue
+							}
+							domainSet[d] = struct{}{}
+						}
+					}
+				}
+			}
+		}
+
+		if len(domainSet) > 0 {
+			// marshal the domains into a slice
+			var domains []string
+			for d := range domainSet {
+				domains = append(domains, d)
+			}
+
+			// ensure that these certificates are managed properly;
+			// for example, it's implied that the HTTPPort should also
+			// be the port the HTTP challenge is solved on, and so
+			// for HTTPS port and TLS-ALPN challenge also - we need
+			// to tell the TLS app to manage these certs by honoring
+			// those port configurations
+			acmeManager := &kenginetls.ACMEManagerMaker{
+				Challenges: kenginetls.ChallengesConfig{
+					HTTP: kenginetls.HTTPChallengeConfig{
+						AlternatePort: app.HTTPPort,
+					},
+					TLSALPN: kenginetls.TLSALPNChallengeConfig{
+						AlternatePort: app.HTTPSPort,
+					},
+				},
+			}
+			acmeManager.SetDefaults()
+			tlsApp.Automation.Policies = append(tlsApp.Automation.Policies,
+				kenginetls.AutomationPolicy{
+					Hosts:      domains,
+					Management: acmeManager,
+				})
+
+			// manage their certificates
+			err := tlsApp.Manage(domains)
+			if err != nil {
+				return fmt.Errorf("%s: managing certificate for %s: %s", srvName, domains, err)
+			}
+
+			// tell the server to use TLS by specifying a TLS
+			// connection policy (which supports HTTP/2 and the
+			// TLS-ALPN ACME challenge as well)
+			srv.TLSConnPolicies = kenginetls.ConnectionPolicies{
+				{ALPN: defaultALPN},
+			}
+
+			if srv.DisableAutoHTTPSRedir {
+				continue
+			}
+
+			// create HTTP->HTTPS redirects
+			for _, addr := range srv.Listen {
+				netw, host, port, err := splitListenAddr(addr)
+				if err != nil {
+					return fmt.Errorf("%s: invalid listener address: %v", srvName, addr)
+				}
+				httpRedirLnAddr := joinListenAddr(netw, host, strconv.Itoa(app.HTTPPort))
+				lnAddrMap[httpRedirLnAddr] = struct{}{}
+
+				if parts := strings.SplitN(port, "-", 2); len(parts) == 2 {
+					port = parts[0]
+				}
+				redirTo := "https://{http.request.host}"
+
+				httpsPort := app.HTTPSPort
+				if httpsPort == 0 {
+					httpsPort = DefaultHTTPSPort
+				}
+				if port != strconv.Itoa(httpsPort) {
+					redirTo += ":" + port
+				}
+				redirTo += "{http.request.uri}"
+
+				redirRoutes = append(redirRoutes, ServerRoute{
+					matcherSets: []MatcherSet{
+						{
+							MatchProtocol("http"),
+							MatchHost(domains),
+						},
+					},
+					responder: Static{
+						StatusCode: http.StatusTemporaryRedirect, // TODO: use permanent redirect instead
+						Headers: http.Header{
+							"Location":   []string{redirTo},
+							"Connection": []string{"close"},
+						},
+						Close: true,
+					},
+				})
+			}
+		}
+	}
+
+	if len(lnAddrMap) > 0 {
+		var lnAddrs []string
+	mapLoop:
+		for addr := range lnAddrMap {
+			netw, addrs, err := parseListenAddr(addr)
+			if err != nil {
+				continue
+			}
+			for _, a := range addrs {
+				if app.listenerTaken(netw, a) {
+					continue mapLoop
+				}
+			}
+			lnAddrs = append(lnAddrs, addr)
+		}
+		app.Servers["auto_https_redirects"] = &Server{
+			Listen:           lnAddrs,
+			Routes:           redirRoutes,
+			DisableAutoHTTPS: true,
+			tlsApp:           tlsApp, // required to solve HTTP challenge
+		}
+	}
+
+	return nil
+}
+
+func (app *App) listenerTaken(network, address string) bool {
+	for _, srv := range app.Servers {
+		for _, addr := range srv.Listen {
+			netw, addrs, err := parseListenAddr(addr)
+			if err != nil || netw != network {
+				continue
+			}
+			for _, a := range addrs {
+				if a == address {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+var defaultALPN = []string{"h2", "http/1.1"}
+
 // RequestMatcher is a type that can match to a request.
-// A route matcher MUST NOT modify the request, with the
-// only exception being its context.
+// A route matcher MUST NOT modify the request.
 type RequestMatcher interface {
 	Match(*http.Request) bool
 }
 
+// Middleware chains one Handler to the next by being passed
+// the next Handler in the chain.
+type Middleware func(HandlerFunc) HandlerFunc
+
+// MiddlewareHandler is a Handler that includes a reference
+// to the next middleware handler in the chain. Middleware
+// handlers MUST NOT call Write() or WriteHeader() on the
+// response writer; doing so will panic. See Handler godoc
+// for more information.
+type MiddlewareHandler interface {
+	ServeHTTP(http.ResponseWriter, *http.Request, Handler) error
+}
+
 // Handler is like http.Handler except ServeHTTP may return an error.
+//
+// Middleware and responder handlers both implement this method.
+// Middleware must not call Write or WriteHeader on the ResponseWriter;
+// doing so will cause a panic. Responders should write to the response
+// if there was not an error.
 //
 // If any handler encounters an error, it should be returned for proper
 // handling. Return values should be propagated down the middleware chain
-// by returning it unchanged. Returned errors should not be re-wrapped
-// if they are already HandlerError values.
+// by returning it unchanged. Returned errors should not be re-wrapped.
 type Handler interface {
 	ServeHTTP(http.ResponseWriter, *http.Request) error
 }
@@ -58,255 +389,62 @@ func (f HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
 	return f(w, r)
 }
 
-// Middleware chains one Handler to the next by being passed
-// the next Handler in the chain.
-type Middleware func(Handler) Handler
+// emptyHandler is used as a no-op handler, which is
+// sometimes better than a nil Handler pointer.
+var emptyHandler HandlerFunc = func(w http.ResponseWriter, r *http.Request) error { return nil }
 
-// MiddlewareHandler is like Handler except it takes as a third
-// argument the next handler in the chain. The next handler will
-// never be nil, but may be a no-op handler if this is the last
-// handler in the chain. Handlers which act as middleware should
-// call the next handler's ServeHTTP method so as to propagate
-// the request down the chain properly. Handlers which act as
-// responders (content origins) need not invoke the next handler,
-// since the last handler in the chain should be the first to
-// write the response.
-type MiddlewareHandler interface {
-	ServeHTTP(http.ResponseWriter, *http.Request, Handler) error
+func parseListenAddr(a string) (network string, addrs []string, err error) {
+	var host, port string
+	network, host, port, err = splitListenAddr(a)
+	if network == "" {
+		network = "tcp"
+	}
+	if err != nil {
+		return
+	}
+	ports := strings.SplitN(port, "-", 2)
+	if len(ports) == 1 {
+		ports = append(ports, ports[0])
+	}
+	var start, end int
+	start, err = strconv.Atoi(ports[0])
+	if err != nil {
+		return
+	}
+	end, err = strconv.Atoi(ports[1])
+	if err != nil {
+		return
+	}
+	if end < start {
+		err = fmt.Errorf("end port must be greater than start port")
+		return
+	}
+	for p := start; p <= end; p++ {
+		addrs = append(addrs, net.JoinHostPort(host, fmt.Sprintf("%d", p)))
+	}
+	return
 }
 
-// emptyHandler is used as a no-op handler.
-var emptyHandler Handler = HandlerFunc(func(_ http.ResponseWriter, req *http.Request) error {
-	SetVar(req.Context(), "unhandled", true)
-	return nil
-})
-
-// An implicit suffix middleware that, if reached, sets the StatusCode to the
-// error stored in the ErrorCtxKey. This is to prevent situations where the
-// Error chain does not actually handle the error (for instance, it matches only
-// on some errors). See #3053
-var errorEmptyHandler Handler = HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
-	httpError := r.Context().Value(ErrorCtxKey)
-	if handlerError, ok := httpError.(HandlerError); ok {
-		w.WriteHeader(handlerError.StatusCode)
-	} else {
-		w.WriteHeader(http.StatusInternalServerError)
+func splitListenAddr(a string) (network, host, port string, err error) {
+	if idx := strings.Index(a, "/"); idx >= 0 {
+		network = strings.ToLower(strings.TrimSpace(a[:idx]))
+		a = a[idx+1:]
 	}
-	return nil
-})
-
-// ResponseHandler pairs a response matcher with custom handling
-// logic. Either the status code can be changed to something else
-// while using the original response body, or, if a status code
-// is not set, it can execute a custom route list; this is useful
-// for executing handler routes based on the properties of an HTTP
-// response that has not been written out to the client yet.
-//
-// To use this type, provision it at module load time, then when
-// ready to use, match the response against its matcher; if it
-// matches (or doesn't have a matcher), change the status code on
-// the response if configured; otherwise invoke the routes by
-// calling `rh.Routes.Compile(next).ServeHTTP(rw, req)` (or similar).
-type ResponseHandler struct {
-	// The response matcher for this handler. If empty/nil,
-	// it always matches.
-	Match *ResponseMatcher `json:"match,omitempty"`
-
-	// To write the original response body but with a different
-	// status code, set this field to the desired status code.
-	// If set, this takes priority over routes.
-	StatusCode WeakString `json:"status_code,omitempty"`
-
-	// The list of HTTP routes to execute if no status code is
-	// specified. If evaluated, the original response body
-	// will not be written.
-	Routes RouteList `json:"routes,omitempty"`
+	host, port, err = net.SplitHostPort(a)
+	return
 }
 
-// Provision sets up the routes in rh.
-func (rh *ResponseHandler) Provision(ctx kengine.Context) error {
-	if rh.Routes != nil {
-		err := rh.Routes.Provision(ctx)
-		if err != nil {
-			return err
-		}
+func joinListenAddr(network, host, port string) string {
+	var a string
+	if network != "" {
+		a = network + "/"
 	}
-	return nil
+	a += host
+	if port != "" {
+		a += ":" + port
+	}
+	return a
 }
-
-// WeakString is a type that unmarshals any JSON value
-// as a string literal, with the following exceptions:
-//
-// 1. actual string values are decoded as strings; and
-// 2. null is decoded as empty string;
-//
-// and provides methods for getting the value as various
-// primitive types. However, using this type removes any
-// type safety as far as deserializing JSON is concerned.
-type WeakString string
-
-// UnmarshalJSON satisfies json.Unmarshaler according to
-// this type's documentation.
-func (ws *WeakString) UnmarshalJSON(b []byte) error {
-	if len(b) == 0 {
-		return io.EOF
-	}
-	if b[0] == byte('"') && b[len(b)-1] == byte('"') {
-		var s string
-		err := json.Unmarshal(b, &s)
-		if err != nil {
-			return err
-		}
-		*ws = WeakString(s)
-		return nil
-	}
-	if bytes.Equal(b, []byte("null")) {
-		return nil
-	}
-	*ws = WeakString(b)
-	return nil
-}
-
-// MarshalJSON marshals was a boolean if true or false,
-// a number if an integer, or a string otherwise.
-func (ws WeakString) MarshalJSON() ([]byte, error) {
-	if ws == "true" {
-		return []byte("true"), nil
-	}
-	if ws == "false" {
-		return []byte("false"), nil
-	}
-	if num, err := strconv.Atoi(string(ws)); err == nil {
-		return json.Marshal(num)
-	}
-	return json.Marshal(string(ws))
-}
-
-// Int returns ws as an integer. If ws is not an
-// integer, 0 is returned.
-func (ws WeakString) Int() int {
-	num, _ := strconv.Atoi(string(ws))
-	return num
-}
-
-// Float64 returns ws as a float64. If ws is not a
-// float value, the zero value is returned.
-func (ws WeakString) Float64() float64 {
-	num, _ := strconv.ParseFloat(string(ws), 64)
-	return num
-}
-
-// Bool returns ws as a boolean. If ws is not a
-// boolean, false is returned.
-func (ws WeakString) Bool() bool {
-	return string(ws) == "true"
-}
-
-// String returns ws as a string.
-func (ws WeakString) String() string {
-	return string(ws)
-}
-
-// StatusCodeMatches returns true if a real HTTP status code matches
-// the configured status code, which may be either a real HTTP status
-// code or an integer representing a class of codes (e.g. 4 for all
-// 4xx statuses).
-func StatusCodeMatches(actual, configured int) bool {
-	if actual == configured {
-		return true
-	}
-	if configured < 100 &&
-		actual >= configured*100 &&
-		actual < (configured+1)*100 {
-		return true
-	}
-	return false
-}
-
-// SanitizedPathJoin performs filepath.Join(root, reqPath) that
-// is safe against directory traversal attacks. It uses logic
-// similar to that in the Go standard library, specifically
-// in the implementation of http.Dir. The root is assumed to
-// be a trusted path, but reqPath is not; and the output will
-// never be outside of root. The resulting path can be used
-// with the local file system. If root is empty, the current
-// directory is assumed. If the cleaned request path is deemed
-// not local according to lexical processing (i.e. ignoring links),
-// it will be rejected as unsafe and only the root will be returned.
-func SanitizedPathJoin(root, reqPath string) string {
-	if root == "" {
-		root = "."
-	}
-
-	relPath := path.Clean("/" + reqPath)[1:] // clean path and trim the leading /
-	if relPath != "" && !filepath.IsLocal(relPath) {
-		// path is unsafe (see https://github.com/golang/go/issues/56336#issuecomment-1416214885)
-		return root
-	}
-
-	path := filepath.Join(root, filepath.FromSlash(relPath))
-
-	// filepath.Join also cleans the path, and cleaning strips
-	// the trailing slash, so we need to re-add it afterwards.
-	// if the length is 1, then it's a path to the root,
-	// and that should return ".", so we don't append the separator.
-	if strings.HasSuffix(reqPath, "/") && len(reqPath) > 1 {
-		path += separator
-	}
-
-	return path
-}
-
-// CleanPath cleans path p according to path.Clean(), but only
-// merges repeated slashes if collapseSlashes is true, and always
-// preserves trailing slashes.
-func CleanPath(p string, collapseSlashes bool) string {
-	if collapseSlashes {
-		return cleanPath(p)
-	}
-
-	// insert an invalid/impossible URI character into each two consecutive
-	// slashes to expand empty path segments; then clean the path as usual,
-	// and then remove the remaining temporary characters.
-	const tmpCh = 0xff
-	var sb strings.Builder
-	for i, ch := range p {
-		if ch == '/' && i > 0 && p[i-1] == '/' {
-			sb.WriteByte(tmpCh)
-		}
-		sb.WriteRune(ch)
-	}
-	halfCleaned := cleanPath(sb.String())
-	halfCleaned = strings.ReplaceAll(halfCleaned, string([]byte{tmpCh}), "")
-
-	return halfCleaned
-}
-
-// cleanPath does path.Clean(p) but preserves any trailing slash.
-func cleanPath(p string) string {
-	cleaned := path.Clean(p)
-	if cleaned != "/" && strings.HasSuffix(p, "/") {
-		cleaned = cleaned + "/"
-	}
-	return cleaned
-}
-
-// tlsPlaceholderWrapper is a no-op listener wrapper that marks
-// where the TLS listener should be in a chain of listener wrappers.
-// It should only be used if another listener wrapper must be placed
-// in front of the TLS handshake.
-type tlsPlaceholderWrapper struct{}
-
-func (tlsPlaceholderWrapper) KengineModule() kengine.ModuleInfo {
-	return kengine.ModuleInfo{
-		ID:  "kengine.listeners.tls",
-		New: func() kengine.Module { return new(tlsPlaceholderWrapper) },
-	}
-}
-
-func (tlsPlaceholderWrapper) WrapListener(ln net.Listener) net.Listener { return ln }
-
-func (tlsPlaceholderWrapper) UnmarshalKenginefile(d *kenginefile.Dispenser) error { return nil }
 
 const (
 	// DefaultHTTPPort is the default port for HTTP.
@@ -316,10 +454,5 @@ const (
 	DefaultHTTPSPort = 443
 )
 
-const separator = string(filepath.Separator)
-
 // Interface guard
-var (
-	_ kengine.ListenerWrapper = (*tlsPlaceholderWrapper)(nil)
-	_ kenginefile.Unmarshaler = (*tlsPlaceholderWrapper)(nil)
-)
+var _ kengine.App = (*App)(nil)
