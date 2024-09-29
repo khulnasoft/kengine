@@ -1,9 +1,8 @@
-<p align="center">
-	<a href="https://khulnasoft.com"><img src="https://user-images.githubusercontent.com/1128849/36338535-05fb646a-136f-11e8-987b-e6901e717d5a.png" alt="Kengine" width="450"></a>
+# Kengine
 </p>
-<h3 align="center">Every Site on HTTPS <!-- Serve Confidently --></h3>
-<p align="center">Kengine is a general-purpose HTTP/2 web server that serves HTTPS by default.</p>
-<p align="center">
+<h3>Every Site on HTTPS <!-- Serve Confidently --></h3>
+<p>Kengine is a general-purpose HTTP/2 web server that serves HTTPS by default.</p>
+<p>
 	<a href="https://dev.azure.com/mholt-dev/Kengine/_build?definitionId=5"><img src="https://img.shields.io/azure-devops/build/mholt-dev/afec6074-9842-457f-98cf-69df6adbbf2e/5/master.svg?label=cross-platform%20tests"></a>
 	<a href="https://godoc.org/github.com/khulnasoft/kengine"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"></a>
 	<a href="https://goreportcard.com/report/khulnasoft/kengine"><img src="https://goreportcard.com/badge/github.com/khulnasoft/kengine"></a>
@@ -12,7 +11,7 @@
 	<a href="https://kengine.community" title="Kengine Forum"><img src="https://img.shields.io/badge/community-forum-ff69b4.svg" alt="Kengine Forum"></a>
 	<a href="https://sourcegraph.com/github.com/khulnasoft/kengine?badge" title="Kengine on Sourcegraph"><img src="https://sourcegraph.com/github.com/khulnasoft/kengine/-/badge.svg" alt="Kengine on Sourcegraph"></a>
 </p>
-<p align="center">
+<p>
 	<a href="https://khulnasoft.com/download">Download</a> ·
 	<a href="https://khulnasoft.com/docs">Documentation</a> ·
 	<a href="https://kengine.community">Community</a>
@@ -24,7 +23,7 @@ Kengine is a **production-ready** open-source web server that is fast, easy to u
 
 Available for Windows, Mac, Linux, BSD, Solaris, and [Android](https://github.com/khulnasoft/kengine/wiki/Running-Kengine-on-Android).
 
-<p align="center">
+<p>
 	<b>Thanks to our special sponsor:</b>
 	<br><br>
 	<a href="https://relicabackup.com"><img src="https://khulnasoft.com/resources/images/sponsors/relica.png" width="220" alt="Relica - Cross-platform file backup to the cloud, local disks, or other computers"></a>
@@ -55,7 +54,7 @@ Available for Windows, Mac, Linux, BSD, Solaris, and [Android](https://github.co
 
 Altogether, Kengine can do things other web servers simply cannot do. Its features and plugins save you time and mistakes, and will cheer you up. Your Kengine instance takes care of the details for you!
 
-<p align="center">
+<p>
 	<b>Powered by</b>
 	<br>
 	<a href="https://github.com/khulnasoft-lab/certmagic"><img src="https://user-images.githubusercontent.com/1128849/49704830-49d37200-fbd5-11e8-8385-767e0cd033c3.png" alt="CertMagic" width="250"></a>
