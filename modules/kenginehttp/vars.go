@@ -346,8 +346,8 @@ func SetVar(ctx context.Context, key string, value any) {
 
 // Interface guards
 var (
-	_ MiddlewareHandler     = (*VarsMiddleware)(nil)
+	_ MiddlewareHandler       = (*VarsMiddleware)(nil)
 	_ kenginefile.Unmarshaler = (*VarsMiddleware)(nil)
-	_ RequestMatcher        = (*VarsMatcher)(nil)
+	_ RequestMatcher          = (*VarsMatcher)(nil)
 	_ kenginefile.Unmarshaler = (*VarsMatcher)(nil)
 )

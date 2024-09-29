@@ -235,7 +235,6 @@ func Test_isKenginefile(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			
 			name: "json is not kenginefile but not error",
 			args: args{
 				configFile:  "./Kenginefile.json",
@@ -245,7 +244,6 @@ func Test_isKenginefile(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			
 			name: "prefix of Kenginefile and ./ with any extension is Kenginefile",
 			args: args{
 				configFile:  "./Kenginefile.prd",
@@ -255,7 +253,6 @@ func Test_isKenginefile(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			
 			name: "prefix of Kenginefile without ./ with any extension is Kenginefile",
 			args: args{
 				configFile:  "Kenginefile.prd",

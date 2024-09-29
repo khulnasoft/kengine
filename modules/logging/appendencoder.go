@@ -351,7 +351,7 @@ func (fe AppendEncoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (
 
 // Interface guards
 var (
-	_ zapcore.Encoder                  = (*AppendEncoder)(nil)
+	_ zapcore.Encoder                    = (*AppendEncoder)(nil)
 	_ kenginefile.Unmarshaler            = (*AppendEncoder)(nil)
 	_ kengine.ConfiguresFormatterDefault = (*AppendEncoder)(nil)
 )

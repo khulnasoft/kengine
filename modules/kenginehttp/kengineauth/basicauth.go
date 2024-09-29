@@ -298,5 +298,5 @@ type Account struct {
 // Interface guards
 var (
 	_ kengine.Provisioner = (*HTTPBasicAuth)(nil)
-	_ Authenticator     = (*HTTPBasicAuth)(nil)
+	_ Authenticator       = (*HTTPBasicAuth)(nil)
 )

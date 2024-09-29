@@ -717,8 +717,8 @@ const MatcherNameCtxKey = "matcher_name"
 // Interface guards
 var (
 	_ kengine.Provisioner     = (*MatchExpression)(nil)
-	_ RequestMatcher        = (*MatchExpression)(nil)
+	_ RequestMatcher          = (*MatchExpression)(nil)
 	_ kenginefile.Unmarshaler = (*MatchExpression)(nil)
-	_ json.Marshaler        = (*MatchExpression)(nil)
-	_ json.Unmarshaler      = (*MatchExpression)(nil)
+	_ json.Marshaler          = (*MatchExpression)(nil)
+	_ json.Unmarshaler        = (*MatchExpression)(nil)
 )

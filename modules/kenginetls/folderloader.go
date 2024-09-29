@@ -165,6 +165,6 @@ func tlsCertFromCertAndKeyPEMBundle(bundle []byte) (tls.Certificate, error) {
 }
 
 var (
-	_ CertificateLoader = (FolderLoader)(nil)
+	_ CertificateLoader   = (FolderLoader)(nil)
 	_ kengine.Provisioner = (FolderLoader)(nil)
 )
