@@ -35,7 +35,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/google/uuid"
+	// Only keep one import of uuid
+	// "github.com/google/uuid" // <-- Remove the duplicate
 	"github.com/google/uuid"
 	"github.com/khulnasoft-lab/certmagic"
 	"go.uber.org/zap"
