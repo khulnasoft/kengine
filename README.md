@@ -1,6 +1,4 @@
 # KENGINR
-<h3">Every site on HTTPS</h3>
-<p">Kengine is an extensible server platform that uses TLS by default.</p>
 <p">
 	<a href="https://github.com/khulnasoft/kengine/actions/workflows/ci.yml"><img src="https://github.com/khulnasoft/kengine/actions/workflows/ci.yml/badge.svg"></a>
 	<a href="https://pkg.go.dev/github.com/khulnasoft/kengine/v2"><img src="https://img.shields.io/badge/godoc-reference-%23007d9c.svg"></a>
