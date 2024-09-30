@@ -1,18 +1,7 @@
-<p align="center">
-	<a href="https://khulnasoft.com">
-		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/1128849/210187358-e2c39003-9a5e-4dd5-a783-6deb6483ee72.svg">
-			<source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/1128849/210187356-dfb7f1c5-ac2e-43aa-bb23-fc014280ae1f.svg">
-			<img src="https://user-images.githubusercontent.com/1128849/210187356-dfb7f1c5-ac2e-43aa-bb23-fc014280ae1f.svg" alt="Kengine" width="550">
-		</picture>
-	</a>
-	<br>
-	<h3 align="center">a <a href="https://zerossl.com"><img src="https://user-images.githubusercontent.com/55066419/208327323-2770dc16-ec09-43a0-9035-c5b872c2ad7f.svg" height="28" style="vertical-align: -7.7px" valign="middle"></a> project</h3>
-</p>
-<hr>
-<h3 align="center">Every site on HTTPS</h3>
-<p align="center">Kengine is an extensible server platform that uses TLS by default.</p>
-<p align="center">
+# KENGINR
+<h3">Every site on HTTPS</h3>
+<p">Kengine is an extensible server platform that uses TLS by default.</p>
+<p">
 	<a href="https://github.com/khulnasoft/kengine/actions/workflows/ci.yml"><img src="https://github.com/khulnasoft/kengine/actions/workflows/ci.yml/badge.svg"></a>
 	<a href="https://pkg.go.dev/github.com/khulnasoft/kengine/v2"><img src="https://img.shields.io/badge/godoc-reference-%23007d9c.svg"></a>
 	<br>
@@ -22,7 +11,7 @@
 	<a href="https://sourcegraph.com/github.com/khulnasoft/kengine?badge" title="Kengine on Sourcegraph"><img src="https://sourcegraph.com/github.com/khulnasoft/kengine/-/badge.svg" alt="Kengine on Sourcegraph"></a>
 	<a href="https://cloudsmith.io/~kengine/repos/"><img src="https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith" alt="Cloudsmith"></a>
 </p>
-<p align="center">
+<p">
 	<a href="https://github.com/khulnasoft/kengine/releases">Releases</a> ·
 	<a href="https://khulnasoft.com/docs/">Documentation</a> ·
 	<a href="https://kengine.community">Get Help</a>
@@ -41,7 +30,7 @@
 - [Getting help](#getting-help)
 - [About](#about)
 
-<p align="center">
+<p">
 	<b>Powered by</b>
 	<br>
 	<a href="https://github.com/khulnasoft-lab/certmagic">
